@@ -1,16 +1,59 @@
-﻿# Ignore root-level generated artifacts
+
 .DS_Store
 Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Local environment files
+
 .env
 .env.local
 .env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
 
-./TODO/TODO.md
+!/.env.example
+!**/.env.example
 
-# Logs
+
+
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Docker overrides
+
+
+node_modules/
+**/node_modules/
+frontend/dist/
+backend/public/build/
+coverage/
+
+
+
+vendor/
+**/vendor/
+backend/storage/*.key
+backend/storage/logs/
+backend/bootstrap/cache/*.php
+backend/.phpunit.result.cache
+
+# SQLite local DB
+backend/database/database.sqlite
+
+
+
+*.tmp
+*.temp
+
+# Docker local override
+
 docker-compose.override.yml
+
+# Project private notes
+
+/TODO/TODO.md
+docs/architecture.md
