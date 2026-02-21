@@ -1,0 +1,258 @@
+.plans-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 1.4rem;
+  animation: rise 0.55s ease both;
+}
+
+.plans-header {
+  margin-bottom: 0.6rem;
+}
+
+.plans-header h2 {
+  margin: 0.35rem 0 0;
+}
+
+.plans-filters {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 0.8rem;
+  align-items: end;
+  margin-bottom: 0.8rem;
+}
+
+.filter-label {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 0;
+  font-weight: 700;
+}
+
+.category-filter {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.55rem 0.62rem;
+  background: #fff;
+  min-height: 42px;
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.plan-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.95rem;
+  background: #fff;
+}
+
+.plan-status {
+  display: inline-block;
+  margin: 0;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  background: #f4e6cf;
+  color: #7e4a2f;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.status-pending {
+  background: #fff3cd;
+  color: #8a5a00;
+}
+
+.status-paid {
+  background: #d8f3dc;
+  color: #1f6f4f;
+}
+
+.status-failed {
+  background: #fde2e4;
+  color: #a12626;
+}
+
+.status-refunded {
+  background: #e7ecf2;
+  color: #48576b;
+}
+
+.plan-price {
+  margin: 0.3rem 0 0;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.7rem;
+}
+
+.auth-logout {
+  display: grid;
+  gap: 0.8rem;
+  max-width: 640px;
+}
+
+.profile-grid {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.model-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.model-table th,
+.model-table td {
+  border: 1px solid var(--line);
+  padding: 0.65rem 0.7rem;
+  text-align: left;
+  background: #fff;
+}
+
+.model-table th {
+  background: #f7edd8;
+  color: var(--ink);
+}
+
+.table-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.table-actions .secondary-btn,
+.table-actions .danger-btn {
+  padding: 0.45rem 0.62rem;
+}
+
+.table-actions i {
+  margin-right: 0;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.detail-item {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.55rem 0.6rem;
+  background: #fff;
+}
+
+.detail-label {
+  margin: 0;
+  color: #7e4a2f;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.detail-value {
+  margin: 0.2rem 0 0;
+  color: var(--ink);
+  word-break: break-word;
+}
+
+@media (max-width: 900px) {
+  .plans-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.plan-description {
+  margin: 0.35rem 0 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.empty-state {
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  background: #fff9ee;
+  padding: 0.9rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.plans-filters-sticky {
+  position: sticky;
+  top: 84px;
+  z-index: 6;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.7rem;
+}
+
+.pagination-bar {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.page-pill {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.page-pill.is-active {
+  background: #f4e6cf;
+  border-color: #d5b98d;
+}
+
+@media (max-width: 900px) {
+  .plans-filters-sticky {
+    position: static;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .pagination-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

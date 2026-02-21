@@ -1,0 +1,14 @@
+﻿# Ignore root-level generated artifacts
+.DS_Store
+Thumbs.db
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Docker overrides
+docker-compose.override.yml
