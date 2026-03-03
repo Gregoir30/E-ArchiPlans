@@ -1,30 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-function buildNavItems({ isAuthenticated, role }) {
-  const items = [
+function buildNavItems({ isAuthenticated }) {
+  const baseLinks = [
     { path: '/', label: 'Accueil' },
-    { path: '/a-propos', label: 'A propos' },
-    { path: '/contact', label: 'Contact' },
     { path: '/plans', label: 'Plans' },
+    { path: '/contact', label: 'Contact' },
   ]
 
-  if (!isAuthenticated) {
-    items.push({ path: '/login', label: 'Connexion' })
-    items.push({ path: '/register', label: 'Inscription' })
-    return items
+  if (isAuthenticated) {
+    return baseLinks
   }
 
-  items.push({ path: '/commandes', label: 'Commandes' })
-
-  if (role === 'seller' || role === 'admin') {
-    items.push({ path: '/gestion-plans', label: 'Gestion des plans' })
-  }
-  if (role === 'admin') {
-    items.push({ path: '/modeles', label: 'Modeles' })
-  }
-
-  items.push({ path: '/logout', label: 'Deconnexion' })
-  return items
+  return [...baseLinks, { path: '/login', label: 'Connexion' }, { path: '/register', label: 'Inscription' }]
 }
 
 function getRoleLabel(role) {
@@ -35,40 +22,71 @@ function getRoleLabel(role) {
 }
 
 export default function Header({ currentPath, onNavigate, user, isAuthenticated }) {
+  const [searchTerm, setSearchTerm] = useState('')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-
-  const navItems = buildNavItems({
-    isAuthenticated,
-    role: user?.role ?? '',
-  })
+  const navItems = useMemo(
+    () =>
+      buildNavItems({
+        isAuthenticated,
+        role: user?.role ?? '',
+      }),
+    [isAuthenticated, user?.role],
+  )
 
   useEffect(() => {
-    setIsMenuOpen(false)
+    const frame = window.requestAnimationFrame(() => setIsMenuOpen(false))
+    return () => window.cancelAnimationFrame(frame)
   }, [currentPath])
 
   function handleMenuNavigate(event, nextPath) {
+    event.preventDefault()
     onNavigate(event, nextPath)
     setIsMenuOpen(false)
   }
 
+  function handleSearchSubmit(event) {
+    event.preventDefault()
+    const trimmed = searchTerm.trim()
+    if (trimmed) {
+      const queryPath = `/plans?q=${encodeURIComponent(trimmed)}`
+      window.history.replaceState({}, '', queryPath)
+    }
+    onNavigate(event, '/plans')
+    setSearchTerm('')
+  }
+
   return (
     <header className={`site-header ${isMenuOpen ? 'menu-open' : ''}`}>
-      <a href="/" onClick={(event) => handleMenuNavigate(event, '/')} className="brand">
-        E-ArchiPlans
-      </a>
+      <div className="header-branding">
+        <a href="/" onClick={(event) => handleMenuNavigate(event, '/')} className="brand">
+          E-ArchiPlans
+        </a>
+        <p className="brand-subtitle">Plans prêts à livrer | Experts & certifiés</p>
+      </div>
+
+      <form className="header-search" onSubmit={handleSearchSubmit}>
+        <input
+          aria-label="Rechercher un plan"
+          placeholder="Rechercher un plan (titre, style, surface...)"
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+        />
+        <button type="submit" aria-label="Lancer la recherche">
+          <i className="bi bi-search" />
+        </button>
+      </form>
 
       <button
         type="button"
         className="hamburger-btn"
-        aria-label={isMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
         aria-expanded={isMenuOpen}
-        aria-controls="main-navigation"
+        aria-label={isMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
         onClick={() => setIsMenuOpen((prev) => !prev)}
       >
         <i className={`bi ${isMenuOpen ? 'bi-x-lg' : 'bi-list'}`} />
       </button>
 
-      <nav id="main-navigation" className={`site-nav ${isMenuOpen ? 'is-open' : ''}`} aria-label="Navigation principale">
+      <nav id="main-navigation" className={`site-nav ${isMenuOpen ? 'is-open' : ''}`}>
         {navItems.map((item) => (
           <a
             key={item.path}
@@ -81,17 +99,36 @@ export default function Header({ currentPath, onNavigate, user, isAuthenticated 
         ))}
       </nav>
 
-      {isAuthenticated ? (
-        <a
-          href="/profil"
-          onClick={(event) => handleMenuNavigate(event, '/profil')}
-          className={`header-user ${currentPath === '/profil' ? 'is-active' : ''}`}
-        >
-          <i className="bi bi-person-circle" />
-          <span>{user?.name ?? 'Utilisateur'}</span>
-          <small>{getRoleLabel(user?.role)}</small>
-        </a>
-      ) : null}
+      <div className="header-actions">
+        <button type="button" className="icon-btn cart-btn" aria-label="Voir le panier">
+          <i className="bi bi-bag-check" />
+          <span className="cart-badge" aria-live="polite">
+            0
+          </span>
+        </button>
+        {isAuthenticated ? (
+          <button
+            type="button"
+            className="profile-btn"
+            onClick={(event) => handleMenuNavigate(event, '/profil')}
+          >
+            <i className="bi bi-person-circle" />
+            <span>
+              {user?.name ?? 'Profil'}
+              <small>{getRoleLabel(user?.role)}</small>
+            </span>
+          </button>
+        ) : (
+          <div className="auth-actions">
+            <button type="button" className="ghost-btn" onClick={(event) => handleMenuNavigate(event, '/login')}>
+              Connexion
+            </button>
+            <button type="button" className="primary-btn" onClick={(event) => handleMenuNavigate(event, '/register')}>
+              Inscription
+            </button>
+          </div>
+        )}
+      </div>
     </header>
   )
 }

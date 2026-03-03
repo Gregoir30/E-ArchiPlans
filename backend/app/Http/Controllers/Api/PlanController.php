@@ -4,35 +4,63 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
+use App\Http\Resources\PlanResource;
+use App\Services\AuditLogService;
 use App\Services\FileUploadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PlanController extends Controller
 {
-    public function __construct(private readonly FileUploadService $fileUploadService)
+    public function __construct(
+        private readonly FileUploadService $fileUploadService,
+        private readonly AuditLogService $auditLogService
+    )
     {
     }
 
     public function index(): JsonResponse
     {
-        $plansQuery = Plan::query()
-            ->with(['seller:id,name,email', 'category:id,name,slug'])
-            ->latest();
-
+        $perPage = max(1, request()->integer('per_page', 15));
+        $page = max(1, request()->integer('page', 1));
+        $searchTerm = request('q', '');
         $categoryId = request()->integer('category_id');
+        $minPrice = $this->toCents(request('price_min'));
+        $maxPrice = $this->toCents(request('price_max'));
+        $sortMode = request('sort', 'recent');
+
+        $plansQuery = Plan::query()
+            ->with(['seller:id,name,email', 'category:id,name,slug']);
+
         if ($categoryId > 0) {
             $plansQuery->where('category_id', $categoryId);
         }
 
+        $plansQuery->searchTerm($searchTerm)
+            ->priceBetween($minPrice, $maxPrice);
+
         if (! request()->user('api')) {
-            $plansQuery->where('status', 'approved');
+            $plansQuery->approved();
+        } else {
+            $status = request('status');
+            if (in_array($status, ['draft', 'pending', 'approved', 'rejected'], true)) {
+                $plansQuery->where('status', $status);
+            }
         }
 
-        $plans = $plansQuery->paginate(15);
+        match ($sortMode) {
+            'price-asc' => $plansQuery->orderBy('price_cents', 'asc'),
+            'price-desc' => $plansQuery->orderBy('price_cents', 'desc'),
+            'popular' => $plansQuery->orderBy('updated_at', 'desc'),
+            default => $plansQuery->latest('created_at'),
+        };
 
-        return response()->json($plans);
+        $plans = $plansQuery->paginate($perPage, ['*'], 'page', $page);
+
+        return PlanResource::collection($plans)->response();
     }
 
     public function show(Plan $plan): JsonResponse
@@ -40,6 +68,30 @@ class PlanController extends Controller
         return response()->json(
             $plan->load(['seller:id,name,email', 'category:id,name,slug'])
         );
+    }
+
+    public function coverImage(Plan $plan): BinaryFileResponse
+    {
+        if (! request()->user('api') && $plan->status !== 'approved') {
+            abort(404);
+        }
+
+        if (! $plan->cover_image_path || ! Storage::disk('local')->exists($plan->cover_image_path)) {
+            abort(404);
+        }
+
+        // the `disk` helper returns a Filesystem contract which doesn't declare
+        // mimeType; the actual implementation is a FilesystemAdapter.
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('local');
+
+        $mimeType = $disk->mimeType($plan->cover_image_path) ?: 'application/octet-stream';
+        $absolutePath = $disk->path($plan->cover_image_path);
+
+        return response()->file($absolutePath, [
+            'Content-Type' => $mimeType,
+            'Cache-Control' => 'public, max-age=3600',
+        ]);
     }
 
     public function store(Request $request): JsonResponse
@@ -89,6 +141,14 @@ class PlanController extends Controller
         unset($validated['cover_image'], $validated['plan_file']);
 
         $plan = Plan::query()->create($validated);
+        $this->auditLogService->log(
+            action: 'plan.created',
+            userId: $request->user()->id,
+            auditableType: Plan::class,
+            auditableId: $plan->id,
+            metadata: ['status' => $plan->status],
+            request: $request
+        );
 
         return response()->json(
             $plan->load(['seller:id,name,email', 'category:id,name,slug']),
@@ -141,6 +201,14 @@ class PlanController extends Controller
         unset($validated['cover_image'], $validated['plan_file']);
 
         $plan->update($validated);
+        $this->auditLogService->log(
+            action: 'plan.updated',
+            userId: $request->user()->id,
+            auditableType: Plan::class,
+            auditableId: $plan->id,
+            metadata: array_keys($validated),
+            request: $request
+        );
 
         return response()->json(
             $plan->fresh()->load(['seller:id,name,email', 'category:id,name,slug'])
@@ -150,11 +218,35 @@ class PlanController extends Controller
     public function destroy(Plan $plan): JsonResponse
     {
         $this->authorize('delete', $plan);
+        $request = request();
 
         $this->fileUploadService->delete($plan->cover_image_path);
         $this->fileUploadService->delete($plan->file_path);
+        $this->auditLogService->log(
+            action: 'plan.deleted',
+            userId: $request->user()?->id,
+            auditableType: Plan::class,
+            auditableId: $plan->id,
+            request: $request
+        );
         $plan->delete();
 
         return response()->json(status: 204);
+    }
+
+    private function toCents(mixed $value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $normalized = (string) $value;
+        $normalized = str_replace(',', '.', $normalized);
+
+        if (! is_numeric($normalized)) {
+            return null;
+        }
+
+        return (int) round((float) $normalized * 100);
     }
 }
