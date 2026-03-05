@@ -1,0 +1,584 @@
+/* Variables de couleurs pour les thèmes de section */
+:root {
+  --bg-white: #ffffff;
+  --bg-beige: #f9f7f2; /* Un beige très clair et chaleureux */
+  --bg-dark: #1a1a1a;
+  --text-dark: #1a1a1a;
+  --text-light: #f9f7f2;
+  --accent-color: #d4a373; /* Exemple de couleur accent (ocre/doré) */
+}
+
+/* Réinitialisation de base pour la page */
+.showcase-page {
+  width: 100%;
+  overflow-x: hidden;
+  padding-top: 70px; /* Compenser la hauteur du header fixe */
+}
+
+/* Espacement global des sections */
+.showcase-page section {
+  padding: 4rem 1.5rem;
+}
+
+/* 1. HERO SECTION (Image de fond + Overlay sombre) */
+.showcase-hero {
+  position: relative;
+  min-height: 100vh; /* Agrandissement du Hero */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-size: cover;
+  background-position: center;
+  color: var(--text-light);
+  padding: 0; /* Le padding est géré par le contenu interne */
+}
+
+/* Overlay dégradé pour lisibilité du texte */
+.showcase-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
+  z-index: 1;
+}
+
+.showcase-hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 800px;
+  padding: 2rem;
+  animation: fadeInUp 1s ease-out;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+/* Animation d'entrée */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ajustement pour les boutons dans le Hero */
+.hero-actions button,
+.hero-actions a {
+  min-width: 160px;
+}
+
+.hero-actions .ghost {
+  background-color: transparent;
+  border: 2px solid var(--bg-white);
+  color: var(--bg-white);
+}
+
+/* 2. BARRE DE FILTRES (Sticky sous le Hero) */
+.showcase-topic-row {
+  position: sticky;
+  top: 70px; /* Ajusté pour être sous le header fixe */
+  z-index: 100;
+  background-color: var(--bg-white);
+  border-bottom: 1px solid #eee;
+  padding: 1rem 0;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* 3. TRUST BADGES (Fond Blanc) */
+.showcase-trust-badges {
+  background-color: var(--bg-white);
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+  text-align: center;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 4. PLANS VEDETTES (Fond Beige) */
+.showcase-featured {
+  background-color: var(--bg-beige);
+  color: var(--text-dark);
+}
+
+/* 5. CATALOGUE (Fond Blanc) */
+.showcase-catalog {
+  background-color: var(--bg-white);
+  color: var(--text-dark);
+}
+
+/* 6. GALERIE (Fond Beige ou Sombre selon préférence - ici Beige pour alternance) */
+.showcase-gallery {
+  background-color: var(--bg-beige);
+  color: var(--text-dark);
+}
+
+/* 7. CONTACT (Fond Sombre) */
+.showcase-contact {
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.showcase-contact h2 {
+  color: var(--text-light);
+  margin-bottom: 1rem;
+}
+
+.contact-content {
+  max-width: 800px;
+  width: 100%;
+}
+
+.contact-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin: 2rem 0 3rem;
+}
+
+.contact-actions .ghost {
+  border-color: var(--text-light);
+  color: var(--text-light);
+}
+
+.newsletter-signup {
+  background: rgba(255,255,255,0.1);
+  padding: 2rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.newsletter-signup h3 {
+  color: var(--text-light);
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.newsletter-signup form {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.newsletter-signup input {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: 4px;
+  border: none;
+}
+
+.social-links {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.social-links a {
+  color: var(--text-light);
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.social-links a:hover {
+  opacity: 1;
+  color: var(--accent-color);
+}
+
+/* --- STYLES DES CARTES ENRICHIES --- */
+
+.showcase-featured-card {
+  position: relative;
+  background: var(--bg-white);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.showcase-featured-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* Badge Nouveau */
+.badge-new {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background-color: var(--accent-color);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  z-index: 10;
+  text-transform: uppercase;
+}
+
+/* Overlay Actions (Aperçu rapide) */
+.card-overlay-actions {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 250px; /* Hauteur approximative de l'image */
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 5;
+  pointer-events: none; /* Permet de cliquer sur l'image si besoin, sauf sur le bouton */
+}
+
+.showcase-featured-card:hover .card-overlay-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.btn-quick-view {
+  background-color: var(--bg-white);
+  color: var(--text-dark);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 30px;
+  font-weight: 600;
+  cursor: pointer;
+  transform: translateY(10px);
+  transition: transform 0.3s ease;
+}
+
+.showcase-featured-card:hover .btn-quick-view {
+  transform: translateY(0);
+}
+
+/* Corps de la carte */
+.showcase-card-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.plan-specs {
+  display: flex;
+  gap: 1rem;
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+}
+
+.plan-specs i {
+  margin-right: 0.25rem;
+  color: var(--accent-color);
+}
+
+.clickable-title {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.clickable-title:hover {
+  color: var(--accent-color);
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.btn-details {
+  width: 100%;
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* --- CATALOGUE & FILTRES --- */
+
+/* Pills Filter */
+.pills-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+
+.pill {
+  background: transparent;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #666;
+}
+
+.pill:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.pill.is-active {
+  background-color: var(--text-dark);
+  color: white;
+  border-color: var(--text-dark);
+}
+
+/* Toolbar (Tri, Compteur, Filtres secondaires) */
+.catalog-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+  gap: 1rem;
+}
+
+.catalog-filters .filter-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.small-input {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  width: 140px;
+}
+
+.catalog-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto; /* Pousse à droite */
+}
+
+.results-count {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.sort-select {
+  padding: 0.4rem 2rem 0.4rem 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Skeleton Loader */
+.skeleton-card {
+  background: #fff;
+  border: 1px solid #eee;
+}
+
+.skeleton-image {
+  height: 200px;
+  background-color: #e0e0e0;
+}
+
+.skeleton-card .shimmer-wrapper {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* --- GALLERY --- */
+.showcase-gallery-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  cursor: pointer;
+  background-color: #f0f0f0;
+}
+
+.gallery-item-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.showcase-gallery-item:hover .gallery-item-overlay,
+.showcase-gallery-item:focus-within .gallery-item-overlay {
+  opacity: 1;
+}
+
+.btn-favorite {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255,255,255,0.8);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+  color: var(--text-dark);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  transform: scale(0);
+}
+
+.showcase-gallery-item:hover .btn-favorite,
+.showcase-gallery-item:focus-within .btn-favorite {
+  transform: scale(1);
+}
+
+.btn-favorite:hover {
+  background: white;
+}
+
+.btn-favorite.is-favorite {
+  color: #e74c3c;
+}
+
+.gallery-item-meta {
+  color: white;
+  transform: translateY(10px);
+  transition: transform 0.3s ease;
+}
+
+.showcase-gallery-item:hover .gallery-item-meta,
+.showcase-gallery-item:focus-within .gallery-item-meta {
+  transform: translateY(0);
+}
+
+.gallery-item-meta strong {
+  display: block;
+  font-size: 1.1rem;
+}
+.gallery-item-meta span {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+.gallery-item-meta .btn {
+  margin-top: 0.5rem;
+  background: rgba(255,255,255,0.9);
+  color: var(--text-dark);
+  border-color: transparent;
+}
+
+/* Gallery Skeleton (Shimmer) */
+.showcase-gallery-item.is-skeleton {
+  background-color: #e0e0e0;
+}
+
+.shimmer-wrapper {
+  position: absolute;
+  inset: 0;
+  animation: shimmer 2s infinite;
+  background: linear-gradient(to right, #e0e0e0 8%, #f0f0f0 18%, #e0e0e0 33%);
+  background-size: 1200px 100%;
+}
+
+@keyframes shimmer {
+  0% { background-position: -1200px 0; }
+  100% { background-position: 1200px 0; }
+}
+
+/* --- LIGHTBOX --- */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.lightbox-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.lightbox-image {
+  max-width: 100%;
+  max-height: calc(90vh - 100px); /* Leave space for caption */
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: -2.5rem;
+  right: -1.5rem;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.lightbox-caption {
+  color: white;
+  text-align: center;
+}

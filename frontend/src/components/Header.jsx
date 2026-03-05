@@ -1,18 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
-function buildNavItems({ isAuthenticated }) {
-  const baseLinks = [
-    { path: '/', label: 'Accueil' },
-    { path: '/plans', label: 'Plans' },
-    { path: '/contact', label: 'Contact' },
-  ]
-
-  if (isAuthenticated) {
-    return baseLinks
-  }
-
-  return [...baseLinks, { path: '/login', label: 'Connexion' }, { path: '/register', label: 'Inscription' }]
-}
+const NAV_ITEMS = [
+  { path: '/', label: 'Accueil' },
+  { path: '/plans', label: 'Plans' },
+  { path: '/a-propos', label: 'À propos' },
+  { path: '/contact', label: 'Contact' },
+]
 
 function getRoleLabel(role) {
   if (role === 'admin') return 'Administrateur'
@@ -21,25 +14,22 @@ function getRoleLabel(role) {
   return role ?? ''
 }
 
-export default function Header({ currentPath, onNavigate, user, isAuthenticated }) {
+export default function Header({
+  currentPath,
+  onNavigate,
+  user,
+  isAuthenticated,
+  cartCount = 0,
+  onCartNavigate,
+}) {
   const [searchTerm, setSearchTerm] = useState('')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const navItems = useMemo(
-    () =>
-      buildNavItems({
-        isAuthenticated,
-        role: user?.role ?? '',
-      }),
-    [isAuthenticated, user?.role],
-  )
+  const navItems = useMemo(() => NAV_ITEMS, [])
 
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => setIsMenuOpen(false))
-    return () => window.cancelAnimationFrame(frame)
-  }, [currentPath])
+  const profileLabel = user?.name ? user.name.split(' ')[0] : 'Mon profil'
 
-  function handleMenuNavigate(event, nextPath) {
-    event.preventDefault()
+  function handleNavigate(event, nextPath) {
+    event?.preventDefault?.()
     onNavigate(event, nextPath)
     setIsMenuOpen(false)
   }
@@ -53,15 +43,32 @@ export default function Header({ currentPath, onNavigate, user, isAuthenticated 
     }
     onNavigate(event, '/plans')
     setSearchTerm('')
+    setIsMenuOpen(false)
+  }
+
+  function handleAuthNavigation(event, nextPath) {
+    event.preventDefault()
+    onNavigate(event, nextPath)
+    setIsMenuOpen(false)
+  }
+
+  function handleCartClick(event) {
+    event.preventDefault()
+    if (typeof onCartNavigate === 'function') {
+      onCartNavigate(event)
+    } else {
+      onNavigate(event, '/commandes')
+    }
+    setIsMenuOpen(false)
   }
 
   return (
     <header className={`site-header ${isMenuOpen ? 'menu-open' : ''}`}>
-      <div className="header-branding">
-        <a href="/" onClick={(event) => handleMenuNavigate(event, '/')} className="brand">
+      <div className="header-brand">
+        <a href="/" onClick={(event) => handleNavigate(event, '/')} className="brand">
           E-ArchiPlans
         </a>
-        <p className="brand-subtitle">Plans prêts à livrer | Experts & certifiés</p>
+        <span className="brand-caption">Plans prêts à livrer | Experts certifiés</span>
       </div>
 
       <form className="header-search" onSubmit={handleSearchSubmit}>
@@ -76,6 +83,61 @@ export default function Header({ currentPath, onNavigate, user, isAuthenticated 
         </button>
       </form>
 
+      <nav id="main-navigation" className={`site-nav ${isMenuOpen ? 'is-open' : ''}`}>
+        {navItems.map((item) => (
+          <a
+            key={item.path}
+            href={item.path}
+            onClick={(event) => handleNavigate(event, item.path)}
+            className={currentPath === item.path ? 'is-active' : ''}
+          >
+            {item.label}
+          </a>
+        ))}
+      </nav>
+
+      <div className="header-actions">
+        <button type="button" className="cart-pill" onClick={handleCartClick}>
+          <i className="bi bi-bag-check" />
+          <span className="cart-pill-label">Panier</span>
+          <span className="cart-badge" aria-live="polite">
+            {cartCount}
+          </span>
+        </button>
+
+        {isAuthenticated ? (
+          <div className="auth-actions auth-actions--connected">
+            <button
+              type="button"
+              className="ghost-btn profile-btn"
+              onClick={(event) => handleAuthNavigation(event, '/profil')}
+            >
+              <i className="bi bi-person-circle" />
+              <span>
+                {profileLabel}
+                <small>{getRoleLabel(user?.role)}</small>
+              </span>
+            </button>
+            <button
+              type="button"
+              className="ghost-btn"
+              onClick={(event) => handleAuthNavigation(event, '/logout')}
+            >
+              Déconnexion
+            </button>
+          </div>
+        ) : (
+          <div className="auth-actions">
+            <button type="button" className="ghost-btn" onClick={(event) => handleAuthNavigation(event, '/login')}>
+              Connexion
+            </button>
+            <button type="button" className="primary-btn" onClick={(event) => handleAuthNavigation(event, '/register')}>
+              Inscription
+            </button>
+          </div>
+        )}
+      </div>
+
       <button
         type="button"
         className="hamburger-btn"
@@ -85,50 +147,6 @@ export default function Header({ currentPath, onNavigate, user, isAuthenticated 
       >
         <i className={`bi ${isMenuOpen ? 'bi-x-lg' : 'bi-list'}`} />
       </button>
-
-      <nav id="main-navigation" className={`site-nav ${isMenuOpen ? 'is-open' : ''}`}>
-        {navItems.map((item) => (
-          <a
-            key={item.path}
-            href={item.path}
-            onClick={(event) => handleMenuNavigate(event, item.path)}
-            className={currentPath === item.path ? 'is-active' : ''}
-          >
-            {item.label}
-          </a>
-        ))}
-      </nav>
-
-      <div className="header-actions">
-        <button type="button" className="icon-btn cart-btn" aria-label="Voir le panier">
-          <i className="bi bi-bag-check" />
-          <span className="cart-badge" aria-live="polite">
-            0
-          </span>
-        </button>
-        {isAuthenticated ? (
-          <button
-            type="button"
-            className="profile-btn"
-            onClick={(event) => handleMenuNavigate(event, '/profil')}
-          >
-            <i className="bi bi-person-circle" />
-            <span>
-              {user?.name ?? 'Profil'}
-              <small>{getRoleLabel(user?.role)}</small>
-            </span>
-          </button>
-        ) : (
-          <div className="auth-actions">
-            <button type="button" className="ghost-btn" onClick={(event) => handleMenuNavigate(event, '/login')}>
-              Connexion
-            </button>
-            <button type="button" className="primary-btn" onClick={(event) => handleMenuNavigate(event, '/register')}>
-              Inscription
-            </button>
-          </div>
-        )}
-      </div>
     </header>
   )
 }

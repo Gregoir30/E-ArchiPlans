@@ -34,7 +34,7 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 0.55rem 0.62rem;
-  background: #fff;
+  background: #ffffff;
   min-height: 42px;
 }
 
@@ -48,7 +48,7 @@
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 0.95rem;
-  background: #fff;
+  background: #ffffff;
 }
 
 .plan-status {
@@ -56,25 +56,25 @@
   margin: 0;
   border-radius: 999px;
   padding: 0.15rem 0.5rem;
-  background: #f4e6cf;
-  color: #7e4a2f;
+  background: var(--surface-soft);
+  color: var(--accent-ink);
   font-size: 0.75rem;
   text-transform: uppercase;
 }
 
 .status-pending {
-  background: #fff3cd;
+  background: #faeecf;
   color: #8a5a00;
 }
 
 .status-paid {
-  background: #d8f3dc;
-  color: #1f6f4f;
+  background: #d8efe1;
+  color: var(--ok);
 }
 
 .status-failed {
-  background: #fde2e4;
-  color: #a12626;
+  background: #f7dfe2;
+  color: var(--danger);
 }
 
 .status-refunded {
@@ -121,11 +121,11 @@
   border: 1px solid var(--line);
   padding: 0.65rem 0.7rem;
   text-align: left;
-  background: #fff;
+  background: #ffffff;
 }
 
 .model-table th {
-  background: #f7edd8;
+  background: var(--surface-soft);
   color: var(--ink);
 }
 
@@ -153,12 +153,12 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 0.55rem 0.6rem;
-  background: #fff;
+  background: #ffffff;
 }
 
 .detail-label {
   margin: 0;
-  color: #7e4a2f;
+  color: var(--accent-ink);
   font-size: 0.78rem;
   font-weight: 700;
 }
@@ -194,7 +194,7 @@
 .empty-state {
   border: 1px dashed var(--line);
   border-radius: 12px;
-  background: #fff9ee;
+  background: #f8f1e5;
   padding: 0.9rem;
   display: grid;
   gap: 0.55rem;
@@ -228,7 +228,7 @@
 
 .page-pill {
   border: 1px solid var(--line);
-  background: #fff;
+  background: #ffffff;
   color: var(--ink);
   min-width: 36px;
   height: 36px;
@@ -239,8 +239,8 @@
 }
 
 .page-pill.is-active {
-  background: #f4e6cf;
-  border-color: #d5b98d;
+  background: var(--surface-soft);
+  border-color: #ccb493;
 }
 
 @media (max-width: 900px) {

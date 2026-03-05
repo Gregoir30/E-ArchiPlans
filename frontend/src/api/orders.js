@@ -41,6 +41,20 @@ export async function fetchMyOrders() {
   }
 }
 
+export async function fetchCartSummary() {
+  const response = await fetch('/api/cart', {
+    headers: withAuthHeader({ Accept: 'application/json' }),
+  })
+  if (!response.ok) {
+    return { ok: false, itemsCount: 0 }
+  }
+  const data = await readJson(response)
+  return {
+    ok: true,
+    itemsCount: Number(data?.items_count ?? 0),
+  }
+}
+
 async function readErrorMessage(response, fallback) {
   const data = await readJson(response)
   if (data?.message) return data.message
@@ -68,8 +82,9 @@ export async function simulateFedapayPayment(orderId, outcome) {
   return { ok: false, message: data?.message ?? 'Simulation FedaPay impossible.' }
 }
 
-export async function downloadPlanByToken(token) {
-  const response = await fetch(`/api/downloads/${token}`, {
+export async function downloadPlanByToken(token, signedUrl = '') {
+  const targetUrl = signedUrl || `/api/downloads/${token}`
+  const response = await fetch(targetUrl, {
     headers: withAuthHeader({ Accept: 'application/json, */*' }),
   })
 

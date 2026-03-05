@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\ContactMessage;
 use App\Models\Order;
@@ -54,5 +55,14 @@ class ModelViewController extends Controller
             ContactMessage::query()->latest()->paginate(20)
         );
     }
-}
 
+    public function auditLogs(): JsonResponse
+    {
+        return response()->json(
+            AuditLog::query()
+                ->with('user:id,name,email')
+                ->latest()
+                ->paginate(50)
+        );
+    }
+}

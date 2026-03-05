@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PlanDownload;
+use App\Services\AuditLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -11,8 +12,18 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DownloadController extends Controller
 {
+    public function __construct(private readonly AuditLogService $auditLogService)
+    {
+    }
+
     public function download(Request $request, string $token): BinaryFileResponse|JsonResponse
     {
+        if (! $request->hasValidSignature()) {
+            return response()->json([
+                'message' => 'Lien de telechargement non signe ou invalide.',
+            ], 403);
+        }
+
         $download = PlanDownload::query()
             ->where('token', $token)
             ->with(['orderItem.order', 'orderItem.plan'])
@@ -52,6 +63,15 @@ class DownloadController extends Controller
         if (! $download->downloaded_at) {
             $download->update(['downloaded_at' => now()]);
         }
+
+        $this->auditLogService->log(
+            action: 'download.file',
+            userId: $request->user()->id,
+            auditableType: PlanDownload::class,
+            auditableId: $download->id,
+            metadata: ['plan_id' => $plan->id],
+            request: $request
+        );
 
         return response()->download(
             Storage::disk('local')->path($plan->file_path),

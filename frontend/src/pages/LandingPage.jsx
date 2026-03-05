@@ -2,6 +2,8 @@ import { Component, memo, useCallback, useEffect, useMemo, useRef, useState } fr
 import EmptyState from '../components/ui/EmptyState'
 import StatusBadge from '../components/ui/StatusBadge'
 import { formatPrice } from '../utils/format'
+import useFavorites from '../hooks/useFavorites'
+import PlanCover, { FALLBACK_PLAN_IMAGE, getPlanCoverUrl } from '../components/PlanCover'
 
 const PLAN_STATUS_LABELS = {
   draft: 'Brouillon',
@@ -27,44 +29,9 @@ const GALLERY_BATCH_SIZE = 6
 const INITIAL_GALLERY_COUNT = 8
 const MAX_FEATURED = 2
 const CATALOG_PAGE_SIZE = 9
-const IMAGE_STATES = {
-  COVER: 'cover',
-  PLACEHOLDER: 'placeholder',
-}
 
 function toneClass(index, mod = 4) {
   return `tone-${(index % mod) + 1}`
-}
-
-function getPlanCoverUrl(plan) {
-  if (!plan?.id || !plan?.cover_image_path) return null
-  return `/api/plans/${plan.id}/cover-image`
-}
-
-function stringToColor(value) {
-  let hash = 0
-  for (let i = 0; i < value.length; i += 1) {
-    hash = value.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  const hue = Math.abs(hash) % 360
-  return `hsl(${hue}, 60%, 70%)`
-}
-
-function createPlaceholderSvg(plan) {
-  const initials = (plan?.title ?? '')
-    .split(' ')
-    .map((chunk) => chunk.charAt(0))
-    .filter(Boolean)
-    .slice(0, 2)
-    .join('')
-    .toUpperCase() || 'EA'
-  const color = stringToColor(plan?.title ?? `plan-${plan?.id ?? ''}`)
-  const svg = `
-<svg xmlns='http://www.w3.org/2000/svg' width='460' height='320'>
-  <rect width='460' height='320' rx='28' fill='${color}' />
-  <text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' fill='#fff' font-family='Manrope,Segoe UI,sans-serif' font-size='64'>${initials}</text>
-</svg>`
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 }
 
 function getPlanSpecs(plan) {
@@ -76,48 +43,37 @@ function getPlanSpecs(plan) {
   }
 }
 
-function getPlanImageUrl(plan) {
-  const coverUrl = getPlanCoverUrl(plan)
-  return coverUrl ?? createPlaceholderSvg(plan)
-}
-
-function PlanImage({ plan, className, toneClass: toneClassName = '', alt }) {
-  const coverUrl = getPlanCoverUrl(plan)
-  const [state, setState] = useState(coverUrl ? IMAGE_STATES.COVER : IMAGE_STATES.PLACEHOLDER)
-
-  useEffect(() => {
-    if (!coverUrl) return undefined
-    const frame = window.requestAnimationFrame(() => setState(IMAGE_STATES.COVER))
-    return () => window.cancelAnimationFrame(frame)
-  }, [coverUrl])
-
-  const src = state === IMAGE_STATES.COVER ? coverUrl : createPlaceholderSvg(plan)
-
-  function handleError() {
-    if (state === IMAGE_STATES.COVER) {
-      setState(IMAGE_STATES.PLACEHOLDER)
-    }
-  }
-
-  return (
-    <div className={`${className} ${toneClassName}`}>
-      {src && <img src={src} alt={alt} loading="lazy" onError={handleError} />}
-    </div>
-  )
-}
-
-const FeaturedCard = memo(function FeaturedCard({ plan, index, onBuyPlan, onViewPlan }) {
+const FeaturedCard = memo(function FeaturedCard({
+  plan,
+  index,
+  onBuyPlan,
+  onViewPlan,
+  isFavorite,
+  onToggleFavorite,
+}) {
   const specs = useMemo(() => getPlanSpecs(plan), [plan])
   const badge = index === 0 ? 'Nouveau' : index === 1 ? 'Populaire' : null
 
   return (
     <article className="showcase-featured-card">
-      <PlanImage
+      <PlanCover
         plan={plan}
         className="showcase-card-image"
         toneClass={toneClass(index)}
         alt={`Couverture du plan ${plan.title}`}
       />
+      <button
+        type="button"
+        className={`card-favorite-btn ${isFavorite ? 'is-favorite' : ''}`}
+        aria-pressed={isFavorite}
+        aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+        onClick={(event) => {
+          event.stopPropagation()
+          onToggleFavorite(plan.id)
+        }}
+      >
+        <i className="bi bi-heart-fill" />
+      </button>
       {badge ? <span className="badge-pill">{badge}</span> : null}
       <div className="card-overlay-actions">
         <button type="button" className="btn-quick-view" onClick={() => onViewPlan(plan.id)}>
@@ -158,12 +114,19 @@ const FeaturedCard = memo(function FeaturedCard({ plan, index, onBuyPlan, onView
   )
 })
 
-const CatalogCard = memo(function CatalogCard({ plan, index, onBuyPlan, onViewPlan }) {
+const CatalogCard = memo(function CatalogCard({
+  plan,
+  index,
+  onBuyPlan,
+  onViewPlan,
+  isFavorite,
+  onToggleFavorite,
+}) {
   const specs = useMemo(() => getPlanSpecs(plan), [plan])
 
   return (
     <article className="plan-card">
-      <PlanImage
+      <PlanCover
         plan={plan}
         className="showcase-catalog-thumb"
         toneClass={toneClass(index, 6)}
@@ -176,6 +139,15 @@ const CatalogCard = memo(function CatalogCard({ plan, index, onBuyPlan, onViewPl
         </h3>
         <span className="plan-price">{formatPrice(plan.price_cents, plan.currency)}</span>
       </div>
+      <button
+        type="button"
+        className={`card-favorite-btn ${isFavorite ? 'is-favorite' : ''}`}
+        aria-pressed={isFavorite}
+        aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+        onClick={() => onToggleFavorite(plan.id)}
+      >
+        <i className="bi bi-heart" />
+      </button>
       <p className="plan-category">{plan.category?.name ?? 'Sans catégorie'}</p>
       <div className="plan-specs">
         <span>
@@ -206,7 +178,7 @@ const GalleryCard = memo(function GalleryCard({ plan, index, onNavigate, isFavor
       onClick={(event) => onNavigate(event, `/plans/${plan.id}`)}
       tabIndex={0}
     >
-      <PlanImage
+      <PlanCover
         plan={plan}
         className="showcase-gallery-thumb"
         toneClass={`${toneClass(index, 6)} gallery-size-${(index % 5) + 1}`}
@@ -261,7 +233,7 @@ function GalleryPlaceholders() {
   )
 }
 
-function useInfiniteScroll({ totalItems, initialCount, batchSize, resetKey }) {
+function useInfiniteScroll({ totalItems, initialCount, batchSize }) {
   const [visibleCount, setVisibleCount] = useState(initialCount)
   const sentinelRef = useRef(null)
   const hasMore = visibleCount < totalItems
@@ -269,11 +241,6 @@ function useInfiniteScroll({ totalItems, initialCount, batchSize, resetKey }) {
   const loadMore = useCallback(() => {
     setVisibleCount((value) => Math.min(value + batchSize, totalItems))
   }, [batchSize, totalItems])
-
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => setVisibleCount(initialCount))
-    return () => window.cancelAnimationFrame(frame)
-  }, [resetKey, initialCount])
 
   useEffect(() => {
     if (!hasMore || typeof IntersectionObserver === 'undefined') return undefined
@@ -319,8 +286,11 @@ class SectionErrorBoundary extends Component {
   }
 }
 
+const DEFAULT_HERO_IMAGE =
+  'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1600&q=80'
+
 function HeroSection({ heroPlan, onNavigate }) {
-  const bgImage = heroPlan ? getPlanImageUrl(heroPlan) : null
+  const bgImage = heroPlan ? getPlanImageUrl(heroPlan) : DEFAULT_HERO_IMAGE
   return (
     <section
       className="showcase-hero"
@@ -367,6 +337,28 @@ function TrustStrip() {
           <p>{metric.label}</p>
         </article>
       ))}
+    </section>
+  )
+}
+
+function FavoriteSummary({ count, hasFavorites, onView }) {
+  const label = count === 1 ? 'plan enregistré' : 'plans enregistrés'
+  return (
+    <section className="favorite-summary" aria-label="Plans favoris">
+      <div className="favorite-summary-content">
+        <p className="eyebrow">Collection personnelle</p>
+        <h3>
+          <span>{count}</span> {label}
+        </h3>
+        <p>
+          {hasFavorites
+            ? 'Continuez vos comparaisons depuis vos plans suivis.'
+            : "Enregistrez un plan pour le retrouver plus tard."}
+        </p>
+      </div>
+      <button type="button" className="primary-btn" onClick={onView}>
+        Voir les plans favoris
+      </button>
     </section>
   )
 }
@@ -418,10 +410,10 @@ function FilterBar({
   onSearchChange,
   sortMode,
   onSortChange,
-  priceCap,
+  priceCap: priceCapValue,
   onPriceCapChange,
   priceBounds,
-  surfaceMin,
+  surfaceMin: surfaceMinValue,
   onSurfaceMinChange,
   surfaceBounds,
   resultsCount,
@@ -465,27 +457,27 @@ function FilterBar({
           onChange={(event) => onSearchChange(event.target.value)}
           aria-label="Rechercher un plan"
         />
-        <label className="filter-range">
-          <span>Budget jusqu'à</span>
-          <input
-            type="range"
-            min={priceMin}
-            max={priceMax}
-            value={priceCap}
-            onChange={(event) => onPriceCapChange(Number(event.target.value))}
-          />
-          <strong>{formatPrice(Math.round(priceCap * 100), 'EUR')}</strong>
-        </label>
-        <label className="filter-range">
-          <span>Surface min.</span>
-          <input
-            type="range"
-            min={surfaceBounds.min}
-            max={surfaceMax}
-            value={surfaceMin}
-            onChange={(event) => onSurfaceMinChange(Number(event.target.value))}
-          />
-          <strong>{surfaceMin} m²</strong>
+    <label className="filter-range">
+      <span>Budget jusqu'à</span>
+        <input
+          type="range"
+          min={priceMin}
+          max={priceMax}
+          value={priceCapValue}
+          onChange={(event) => onPriceCapChange(Number(event.target.value))}
+        />
+        <strong>{formatPrice(Math.round(priceCapValue * 100), 'EUR')}</strong>
+    </label>
+    <label className="filter-range">
+      <span>Surface min.</span>
+        <input
+          type="range"
+          min={surfaceBounds.min}
+          max={surfaceMax}
+          value={surfaceMinValue}
+          onChange={(event) => onSurfaceMinChange(Number(event.target.value))}
+        />
+        <strong>{surfaceMinValue} m²</strong>
         </label>
         <select value={sortMode} onChange={(event) => onSortChange(event.target.value)} aria-label="Trier">
           {SORT_OPTIONS.map((option) => (
@@ -502,7 +494,15 @@ function FilterBar({
   )
 }
 
-function FeaturedSection({ plansStatus, plansError, featuredPlans, onBuyPlan, onViewPlan }) {
+function FeaturedSection({
+  plansStatus,
+  plansError,
+  featuredPlans,
+  onBuyPlan,
+  onViewPlan,
+  favoriteIds,
+  onToggleFavorite,
+}) {
   return (
     <section className="showcase-featured" aria-label="Plans en vedette">
       <div className="plans-header">
@@ -524,6 +524,8 @@ function FeaturedSection({ plansStatus, plansError, featuredPlans, onBuyPlan, on
               index={index}
               onBuyPlan={onBuyPlan}
               onViewPlan={onViewPlan}
+              isFavorite={favoriteIds.has(plan.id)}
+              onToggleFavorite={onToggleFavorite}
             />
           ))}
         </div>
@@ -541,6 +543,8 @@ function CatalogSection({
   currentPage,
   totalPages,
   onPageChange,
+  favoriteIds,
+  onToggleFavorite,
 }) {
   return (
     <section className="showcase-catalog" aria-label="Catalogue">
@@ -580,6 +584,8 @@ function CatalogSection({
                 index={index}
                 onBuyPlan={onBuyPlan}
                 onViewPlan={onViewPlan}
+                isFavorite={favoriteIds.has(plan.id)}
+                onToggleFavorite={onToggleFavorite}
               />
             ))}
           </div>
@@ -599,7 +605,6 @@ function GallerySection({ plansStatus, galleryPlans, favoriteIds, onToggleFavori
     totalItems: galleryPlans.length,
     initialCount: INITIAL_GALLERY_COUNT,
     batchSize: GALLERY_BATCH_SIZE,
-    resetKey: galleryPlans.length,
   })
   const visiblePlans = galleryPlans.slice(0, visibleCount)
   const showReal = plansStatus === 'success' && galleryPlans.length > 0
@@ -740,16 +745,7 @@ export default function LandingPage({
   const [sortMode, setSortMode] = useState('recent')
   const [priceCap, setPriceCap] = useState(0)
   const [surfaceMin, setSurfaceMin] = useState(0)
-  const [favoritePlanIds, setFavoritePlanIds] = useState(() => {
-    if (typeof window === 'undefined') return new Set()
-    try {
-      const storage = window.localStorage.getItem('favoritePlans')
-      return storage ? new Set(JSON.parse(storage)) : new Set()
-    } catch (error) {
-      console.error('Impossible de lire les favoris', error)
-      return new Set()
-    }
-  })
+  const { favoriteIds, toggleFavorite, hasFavorites } = useFavorites()
   const [lightboxPlan, setLightboxPlan] = useState(null)
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterStatus, setNewsletterStatus] = useState('')
@@ -769,30 +765,45 @@ export default function LandingPage({
     return { min: Math.min(...values), max: Math.max(...values) }
   }, [plans])
 
-  useEffect(() => {
-    const target = priceBounds.max > 0 ? priceBounds.max : 500
-    if (priceCap === target) return undefined
-    const frame = window.requestAnimationFrame(() => setPriceCap(target))
-    return () => window.cancelAnimationFrame(frame)
-  }, [priceBounds.max, priceCap])
+  const priceSliderMax = priceBounds.max > 0 ? priceBounds.max : priceBounds.min + 500
+  const priceCapValue = priceCap === 0 ? priceSliderMax : Math.min(priceCap, priceSliderMax)
 
-  useEffect(() => {
-    if (surfaceMin === surfaceBounds.min) return undefined
-    const frame = window.requestAnimationFrame(() => setSurfaceMin(surfaceBounds.min))
-    return () => window.cancelAnimationFrame(frame)
-  }, [surfaceBounds.min, surfaceMin])
+  const surfaceSliderMax =
+    Number.isFinite(surfaceBounds.max) && surfaceBounds.max > surfaceBounds.min
+      ? surfaceBounds.max
+      : surfaceBounds.min + 100
+  const surfaceMinValue = surfaceMin === 0 ? surfaceBounds.min : Math.max(surfaceMin, surfaceBounds.min)
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined
-    window.localStorage.setItem('favoritePlans', JSON.stringify(Array.from(favoritePlanIds)))
-    return undefined
-  }, [favoritePlanIds])
+  const sliderPriceBounds = { ...priceBounds, max: priceSliderMax }
+  const sliderSurfaceBounds = { ...surfaceBounds, max: surfaceSliderMax }
 
-  useEffect(() => {
-    if (catalogPage === 1) return undefined
-    const frame = window.requestAnimationFrame(() => setCatalogPage(1))
-    return () => window.cancelAnimationFrame(frame)
-  }, [searchTerm, selectedCategoryId, priceCap, surfaceMin, sortMode, plans.length, catalogPage])
+  const handleSearchTermChange = useCallback((value) => {
+    setSearchTerm(value)
+    setCatalogPage(1)
+  }, [])
+
+  const handleSortModeChange = useCallback((value) => {
+    setSortMode(value)
+    setCatalogPage(1)
+  }, [])
+
+  const handlePriceCapChange = useCallback((value) => {
+    setPriceCap(value)
+    setCatalogPage(1)
+  }, [])
+
+  const handleSurfaceMinChange = useCallback((value) => {
+    setSurfaceMin(value)
+    setCatalogPage(1)
+  }, [])
+
+  const handleCategoryChange = useCallback(
+    (value) => {
+      onCategoryChange(value)
+      setCatalogPage(1)
+    },
+    [onCategoryChange],
+  )
 
   const filteredPlans = useMemo(() => {
     const normalizedSearch = searchTerm.toLowerCase().trim()
@@ -804,11 +815,11 @@ export default function LandingPage({
       })
       .filter((plan) => {
         const price = Number(plan.price_cents ?? 0) / 100
-        return price <= priceCap
+        return price <= priceCapValue
       })
       .filter((plan) => {
         const specs = getPlanSpecs(plan)
-        return specs.surface >= surfaceMin
+        return specs.surface >= surfaceMinValue
       })
       .filter((plan) => {
         if (!normalizedSearch) return true
@@ -826,14 +837,9 @@ export default function LandingPage({
         }
       return b.id - a.id
     })
-  }, [plans, selectedCategoryId, priceCap, surfaceMin, searchTerm, sortMode])
+  }, [plans, selectedCategoryId, priceCapValue, surfaceMinValue, searchTerm, sortMode])
 
   const totalCatalogPages = Math.max(1, Math.ceil(filteredPlans.length / CATALOG_PAGE_SIZE))
-  useEffect(() => {
-    if (catalogPage <= totalCatalogPages) return undefined
-    const frame = window.requestAnimationFrame(() => setCatalogPage(totalCatalogPages))
-    return () => window.cancelAnimationFrame(frame)
-  }, [catalogPage, totalCatalogPages])
   const safeCatalogPage = Math.min(catalogPage, totalCatalogPages)
   const paginatedPlans = useMemo(() => {
     const start = (safeCatalogPage - 1) * CATALOG_PAGE_SIZE
@@ -842,18 +848,24 @@ export default function LandingPage({
 
   const heroPlan = filteredPlans[0] ?? plans[0]
   const featuredPlans = filteredPlans.slice(0, MAX_FEATURED)
-  const handleToggleFavorite = useCallback((planId) => {
-    setFavoritePlanIds((previous) => {
-      const next = new Set(previous)
-      if (next.has(planId)) next.delete(planId)
-      else next.add(planId)
-      return next
-    })
-  }, [])
+  const handleCatalogPageChange = useCallback(
+    (page) => {
+      setCatalogPage((_) => {
+        const desired = Math.max(1, page)
+        return Math.min(desired, totalCatalogPages)
+      })
+    },
+    [totalCatalogPages],
+  )
 
-  const handleCatalogPageChange = useCallback((page) => {
-    setCatalogPage(page)
-  }, [])
+  const galleryResetKey = `${selectedCategoryId}:${searchTerm}:${priceCapValue}:${surfaceMinValue}:${sortMode}`
+  const handleViewFavorites = useCallback(() => {
+    const event = {
+      preventDefault: () => {},
+    }
+    setCatalogPage(1)
+    onNavigate(event, '/plans')
+  }, [onNavigate])
 
   function handleNewsletterSubmit(event) {
     event.preventDefault()
@@ -866,20 +878,25 @@ export default function LandingPage({
     <main className="page page-landing showcase-page" id="main-content">
       <HeroSection heroPlan={heroPlan} onNavigate={onNavigate} />
       <TrustStrip />
+      <FavoriteSummary
+        count={favoriteIds.size}
+        hasFavorites={hasFavorites}
+        onView={handleViewFavorites}
+      />
       <FilterBar
         categories={categories}
         selectedCategoryId={selectedCategoryId}
-        onCategoryChange={onCategoryChange}
+        onCategoryChange={handleCategoryChange}
         searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
+        onSearchChange={handleSearchTermChange}
         sortMode={sortMode}
-        onSortChange={setSortMode}
-        priceCap={priceCap}
-        onPriceCapChange={setPriceCap}
-        priceBounds={priceBounds}
-        surfaceMin={surfaceMin}
-        onSurfaceMinChange={setSurfaceMin}
-        surfaceBounds={surfaceBounds}
+        onSortChange={handleSortModeChange}
+        priceCap={priceCapValue}
+        onPriceCapChange={handlePriceCapChange}
+        priceBounds={sliderPriceBounds}
+        surfaceMin={surfaceMinValue}
+        onSurfaceMinChange={handleSurfaceMinChange}
+        surfaceBounds={sliderSurfaceBounds}
         resultsCount={filteredPlans.length}
       />
       <SectionErrorBoundary>
@@ -894,6 +911,8 @@ export default function LandingPage({
             }
             onNavigate(event, `/plans/${planId}`)
           }}
+          favoriteIds={favoriteIds}
+          onToggleFavorite={toggleFavorite}
         />
       </SectionErrorBoundary>
       <SectionErrorBoundary>
@@ -911,14 +930,17 @@ export default function LandingPage({
           currentPage={safeCatalogPage}
           totalPages={totalCatalogPages}
           onPageChange={handleCatalogPageChange}
+          favoriteIds={favoriteIds}
+          onToggleFavorite={toggleFavorite}
         />
       </SectionErrorBoundary>
       <SectionErrorBoundary>
         <GallerySection
+          key={galleryResetKey}
           plansStatus={plansStatus}
           galleryPlans={filteredPlans}
-          favoriteIds={favoritePlanIds}
-          onToggleFavorite={handleToggleFavorite}
+          favoriteIds={favoriteIds}
+          onToggleFavorite={toggleFavorite}
           onNavigate={onNavigate}
           onOpenLightbox={setLightboxPlan}
         />

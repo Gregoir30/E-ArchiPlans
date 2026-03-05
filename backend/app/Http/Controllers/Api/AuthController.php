@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AuditLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -12,6 +13,10 @@ use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
+    public function __construct(private readonly AuditLogService $auditLogService)
+    {
+    }
+
     public function register(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -27,8 +32,16 @@ class AuthController extends Controller
             'password' => $validated['password'],
             'role' => $validated['role'] ?? 'buyer',
         ]);
-        $token = Str::random(60);
-        $user->forceFill(['api_token' => $token])->save();
+        ['plain' => $token, 'hashed' => $hashedToken] = $this->issueApiToken();
+        $user->forceFill(['api_token' => $hashedToken])->save();
+        $this->auditLogService->log(
+            action: 'auth.register',
+            userId: $user->id,
+            auditableType: User::class,
+            auditableId: $user->id,
+            metadata: ['role' => $user->role],
+            request: $request
+        );
 
         return response()->json([
             'message' => 'Compte cree avec succes.',
@@ -52,8 +65,22 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $token = Str::random(60);
-        $user->forceFill(['api_token' => $token])->save();
+        if (! $user->is_active) {
+            return response()->json([
+                'message' => 'Ce compte est desactive. Contactez un administrateur.',
+            ], 403);
+        }
+
+        ['plain' => $token, 'hashed' => $hashedToken] = $this->issueApiToken();
+        $user->forceFill(['api_token' => $hashedToken])->save();
+        $this->auditLogService->log(
+            action: 'auth.login',
+            userId: $user->id,
+            auditableType: User::class,
+            auditableId: $user->id,
+            metadata: ['role' => $user->role],
+            request: $request
+        );
 
         return response()->json([
             'message' => 'Connexion reussie.',
@@ -68,6 +95,13 @@ class AuthController extends Controller
 
         if ($user) {
             $user->forceFill(['api_token' => null])->save();
+            $this->auditLogService->log(
+                action: 'auth.logout',
+                userId: $user->id,
+                auditableType: User::class,
+                auditableId: $user->id,
+                request: $request
+            );
         }
 
         return response()->json([
@@ -110,6 +144,14 @@ class AuthController extends Controller
 
         if (! empty($updates)) {
             $user->update($updates);
+            $this->auditLogService->log(
+                action: 'auth.profile.updated',
+                userId: $user->id,
+                auditableType: User::class,
+                auditableId: $user->id,
+                metadata: array_keys($updates),
+                request: $request
+            );
         }
 
         return response()->json([
@@ -125,6 +167,17 @@ class AuthController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'role' => $user->role,
+            'is_active' => (bool) $user->is_active,
+        ];
+    }
+
+    private function issueApiToken(): array
+    {
+        $plain = Str::random(60);
+
+        return [
+            'plain' => $plain,
+            'hashed' => hash('sha256', $plain),
         ];
     }
 }

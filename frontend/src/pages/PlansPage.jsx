@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
 import InputField from '../components/ui/InputField'
@@ -61,10 +61,29 @@ export default function PlansPage({
   selectedCategoryId,
   onCategoryChange,
   onBuyPlan,
+  onViewPlan,
 }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState('recent')
   const [page, setPage] = useState(1)
+
+  const handleSearchChange = useCallback((value) => {
+    setSearchTerm(value)
+    setPage(1)
+  }, [])
+
+  const handleSortChange = useCallback((value) => {
+    setSortBy(value)
+    setPage(1)
+  }, [])
+
+  const handleCategoryFilterChange = useCallback(
+    (value) => {
+      onCategoryChange(value)
+      setPage(1)
+    },
+    [onCategoryChange],
+  )
 
   const filteredPlans = useMemo(() => {
     const query = searchTerm.trim().toLowerCase()
@@ -89,27 +108,19 @@ export default function PlansPage({
   }, [plans, searchTerm, selectedCategoryId, sortBy])
 
   const totalPages = Math.max(1, Math.ceil(filteredPlans.length / PAGE_SIZE))
+  const safePage = Math.min(Math.max(page, 1), totalPages)
 
   const paginatedPlans = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE
+    const start = (safePage - 1) * PAGE_SIZE
     return filteredPlans.slice(start, start + PAGE_SIZE)
-  }, [filteredPlans, page])
-
-  useEffect(() => {
-    setPage(1)
-  }, [searchTerm, selectedCategoryId, sortBy])
-
-  useEffect(() => {
-    if (page > totalPages) {
-      setPage(totalPages)
-    }
-  }, [page, totalPages])
+  }, [filteredPlans, safePage])
 
   const hasFilters = Boolean(selectedCategoryId) || searchTerm.trim().length > 0
 
   function clearFilters() {
     setSearchTerm('')
     onCategoryChange('')
+    setPage(1)
   }
 
   const categoryOptions = [
@@ -140,7 +151,7 @@ export default function PlansPage({
             className="filter-label"
             type="search"
             value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
+          onChange={(event) => setSearchTerm(event.target.value)}
             placeholder="Titre, description, categorie..."
           />
 
@@ -150,7 +161,7 @@ export default function PlansPage({
             as="select"
             className="filter-label"
             value={selectedCategoryId}
-            onChange={(event) => onCategoryChange(event.target.value)}
+          onChange={(event) => handleCategoryFilterChange(event.target.value)}
             options={categoryOptions}
           />
 
@@ -160,7 +171,7 @@ export default function PlansPage({
             as="select"
             className="filter-label"
             value={sortBy}
-            onChange={(event) => setSortBy(event.target.value)}
+          onChange={(event) => handleSortChange(event.target.value)}
             options={SORT_OPTIONS}
           />
         </div>
@@ -188,7 +199,7 @@ export default function PlansPage({
         {plansStatus === 'success' && filteredPlans.length > 0 ? (
           <>
             <p>
-              {filteredPlans.length} plan(s) trouves - page {page}/{totalPages}
+              {filteredPlans.length} plan(s) trouves - page {safePage}/{totalPages}
             </p>
 
             <div className="plans-grid">
@@ -199,9 +210,14 @@ export default function PlansPage({
                   <p>{plan.category?.name ?? 'Sans categorie'}</p>
                   {plan.description ? <p className="plan-description">{plan.description}</p> : null}
                   <p className="plan-price">{formatPrice(plan.price_cents, plan.currency)}</p>
-                  <Button type="button" variant="secondary" icon="bi bi-bag-plus" onClick={() => onBuyPlan(plan.id)}>
-                    Commander ce plan
-                  </Button>
+                  <div className="card-actions">
+                    <Button type="button" variant="secondary" icon="bi bi-eye" onClick={() => onViewPlan(plan.id)}>
+                      Voir le detail
+                    </Button>
+                    <Button type="button" variant="secondary" icon="bi bi-bag-plus" onClick={() => onBuyPlan(plan.id)}>
+                      Commander
+                    </Button>
+                  </div>
                 </article>
               ))}
             </div>
@@ -213,7 +229,7 @@ export default function PlansPage({
                   variant="secondary"
                   icon="bi bi-chevron-left"
                   onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                  disabled={page === 1}
+                  disabled={safePage === 1}
                 >
                   Precedent
                 </Button>
@@ -223,8 +239,8 @@ export default function PlansPage({
                     <button
                       key={pageNumber}
                       type="button"
-                      className={`page-pill ${pageNumber === page ? 'is-active' : ''}`}
-                      onClick={() => setPage(pageNumber)}
+                      className={`page-pill ${pageNumber === safePage ? 'is-active' : ''}`}
+                      onClick={() => setPage(Math.min(Math.max(1, pageNumber), totalPages))}
                     >
                       {pageNumber}
                     </button>
@@ -236,7 +252,7 @@ export default function PlansPage({
                   variant="secondary"
                   icon="bi bi-chevron-right"
                   onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-                  disabled={page === totalPages}
+                  disabled={safePage === totalPages}
                 >
                   Suivant
                 </Button>

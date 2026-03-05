@@ -13,6 +13,7 @@ import LogoutPage from './pages/LogoutPage'
 import ManagePlansPage from './pages/ManagePlansPage'
 import ModelsHubPage from './pages/ModelsHubPage'
 import OrdersPage from './pages/OrdersPage'
+import PlanDetailPage from './pages/PlanDetailPage'
 import PlansPage from './pages/PlansPage'
 import ProfilePage from './pages/ProfilePage'
 import RegisterPage from './pages/RegisterPage'
@@ -25,6 +26,7 @@ import PlanDownloadsModelPage from './pages/models/PlanDownloadsModelPage'
 import PlansModelPage from './pages/models/PlansModelPage'
 import UsersModelPage from './pages/models/UsersModelPage'
 import usePlans from './hooks/usePlans'
+import useCartSummary from './hooks/useCartSummary'
 
 function App() {
   const [path, setPath] = useState(window.location.pathname)
@@ -34,6 +36,7 @@ function App() {
   const [purchaseMessage, setPurchaseMessage] = useState('')
   const [authUser, setAuthUser] = useState(getStoredUser())
   const [isAuthenticated, setIsAuthenticated] = useState(Boolean(getAuthToken()))
+  const cartSummary = useCartSummary({ enabled: isAuthenticated })
 
   useEffect(() => {
     const onPopState = () => setPath(window.location.pathname)
@@ -78,6 +81,13 @@ function App() {
     }
   }
 
+  function navigateTo(nextPath) {
+    if (window.location.pathname !== nextPath) {
+      window.history.pushState({}, '', nextPath)
+      setPath(nextPath)
+    }
+  }
+
   function syncAuthState(user = null) {
     setIsAuthenticated(Boolean(getAuthToken()))
     setAuthUser(user ?? getStoredUser())
@@ -97,19 +107,18 @@ function App() {
     const result = await createOrder([planId])
     setPurchaseMessage(result.message)
     if (result.ok) {
+      cartSummary.refreshCart()
       window.history.pushState({}, '', '/commandes')
       setPath('/commandes')
     }
   }
 
-  const filteredPlans = selectedCategoryId
-    ? plans.filter((plan) => String(plan.category_id) === String(selectedCategoryId))
-    : plans
+  const appShellClassName = path === '/' ? 'app-shell app-shell-landing' : 'app-shell'
 
   let page = (
     <LandingPage
       onNavigate={handleNavigate}
-      plans={filteredPlans}
+      plans={plans}
       plansStatus={plansStatus}
       plansError={plansError}
       categories={categories}
@@ -136,8 +145,15 @@ function App() {
         selectedCategoryId={selectedCategoryId}
         onCategoryChange={setSelectedCategoryId}
         onBuyPlan={handleBuyPlan}
+        onViewPlan={(planId) => navigateTo(`/plans/${planId}`)}
       />
     )
+  }
+
+  if (path.startsWith('/plans/')) {
+    const planId = Number(path.split('/')[2])
+    const selectedPlan = plans.find((plan) => Number(plan.id) === planId)
+    page = <PlanDetailPage plan={selectedPlan} onBuyPlan={handleBuyPlan} onNavigate={handleNavigate} />
   }
 
   if (path === '/profil') page = <ProfilePage onNavigate={handleNavigate} />
@@ -180,15 +196,29 @@ function App() {
     )
   }
 
+  const handleCartNavigate = (event) => {
+    if (isAuthenticated) {
+      handleNavigate(event, '/commandes')
+      return
+    }
+    handleNavigate(event, '/login')
+  }
+
   return (
-    <div className="app-shell">
+    <div className={appShellClassName}>
       <div className="ambient-shape shape-a" />
       <div className="ambient-shape shape-b" />
+      <a href="#main-content" className="skip-link">
+        Aller au contenu
+      </a>
       <Header
+        key={path}
         currentPath={path}
         onNavigate={handleNavigate}
         user={authUser}
         isAuthenticated={isAuthenticated}
+        cartCount={cartSummary.itemsCount}
+        onCartNavigate={handleCartNavigate}
       />
       {purchaseMessage ? <p className="success">{purchaseMessage}</p> : null}
       {page}

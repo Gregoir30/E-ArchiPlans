@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Plan;
 use App\Policies\PlanPolicy;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Schema::defaultStringLength(191);
         Gate::policy(Plan::class, PlanPolicy::class);
     }
 }

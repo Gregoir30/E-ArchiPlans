@@ -36,8 +36,8 @@ export default function OrdersPage() {
     Promise.resolve().then(() => loadOrders())
   }, [])
 
-  async function handleDownload(token) {
-    const result = await downloadPlanByToken(token)
+  async function handleDownload(token, signedUrl) {
+    const result = await downloadPlanByToken(token, signedUrl)
     setMessage(result.message)
   }
 
@@ -125,8 +125,8 @@ export default function OrdersPage() {
                               type="button"
                               variant="secondary"
                               icon="bi bi-download"
-                              onClick={() => handleDownload(item.download?.token)}
-                              disabled={!item.download?.token || order.payment_status !== 'paid'}
+                              onClick={() => handleDownload(item.download?.token, item.download?.signed_url)}
+                              disabled={!item.download?.token || !item.download?.signed_url || order.payment_status !== 'paid'}
                               title="Telecharger"
                             >
                               Telecharger

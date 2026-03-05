@@ -57,3 +57,12 @@ docker-compose.override.yml
 
 /TODO/TODO.md
 docs/architecture.md
+
+# Ignore IDE project files
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+
+# Ignore OS generated files

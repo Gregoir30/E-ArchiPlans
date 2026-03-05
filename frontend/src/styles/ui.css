@@ -7,8 +7,12 @@
   --space-6: 1.5rem;
   --radius-sm: 10px;
   --radius-pill: 999px;
-  --focus-ring: rgba(47, 143, 141, 0.35);
+  --focus-ring: rgba(47, 139, 136, 0.35);
   --transition-fast: 0.18s ease;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --elev-1: 0 14px 30px rgba(31, 42, 55, 0.1);
+  --elev-2: 0 20px 48px rgba(31, 42, 55, 0.12);
 }
 
 a,
@@ -34,31 +38,69 @@ textarea:focus-visible {
   font-weight: 600;
 }
 
+.hero,
+.section-intro,
+.plans-section,
+.contact-form,
+.showcase-hero,
+.showcase-intro,
+.showcase-featured,
+.showcase-catalog,
+.showcase-gallery,
+.showcase-contact {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-1);
+}
+
+.plan-card,
+.showcase-featured-card,
+.showcase-gallery-item,
+.detail-item,
+.empty-state {
+  border-radius: var(--radius-md);
+}
+
 .primary-btn,
 .secondary-btn,
 .danger-btn,
-.contact-form button {
-  min-height: 42px;
-  box-shadow: 0 8px 20px rgba(31, 42, 55, 0.14);
-}
-
-.primary-btn {
+.contact-form button,
+.hero-actions a,
+.showcase-feed-loader button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 0.65rem 1rem;
   font-weight: 700;
+  font-size: 0.92rem;
+  line-height: 1;
+  min-height: 42px;
   cursor: pointer;
+  box-shadow: 0 8px 20px rgba(31, 42, 55, 0.14);
+}
+
+.primary-btn {
   color: #fff;
   background: var(--accent);
+}
+
+.secondary-btn {
+  color: #fff;
+  background: var(--brand-navy);
+}
+
+.danger-btn {
+  color: #fff;
+  background: var(--danger);
 }
 
 .primary-btn:hover,
 .secondary-btn:hover,
 .danger-btn:hover,
-.contact-form button:hover {
+.contact-form button:hover,
+.hero-actions a:hover,
+.showcase-feed-loader button:hover {
   transform: translateY(-1px);
 }
 
@@ -68,6 +110,27 @@ textarea:focus-visible {
 .contact-form button:disabled {
   box-shadow: none;
   transform: none;
+}
+
+.primary-btn i,
+.secondary-btn i,
+.danger-btn i,
+.contact-form button i {
+  margin-right: 0.45rem;
+}
+
+.success,
+.error {
+  margin: 0.1rem 0 0;
+  font-weight: 700;
+}
+
+.success {
+  color: var(--ok);
+}
+
+.error {
+  color: var(--danger);
 }
 
 .section-intro p,
@@ -82,9 +145,9 @@ textarea:focus-visible {
 .plan-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 14px 26px rgba(31, 42, 55, 0.1);
-  border-color: #d0b489;
+  border-color: #ccb493;
 }
 
 .model-table tbody tr:hover td {
-  background: #fff9ee;
+  background: #f8f1e5;
 }

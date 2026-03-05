@@ -20,41 +20,41 @@ Transformer le cahier des charges en plan d'exécution concret, priorisé et act
 - [x] Implémenter la page « Contacter » (formulaire + envoi).
 
 ### 2. Catalogue des plans (consultation libre)
-- [ ] Créer la grille style Pinterest.
-- [ ] Implémenter les catégories (Maison moderne, Duplex, Villa, etc.).
-- [ ] Ajouter recherche textuelle + filtres.
-- [ ] Créer la page détail d'un plan (aperçu, prix, vendeur, caractéristiques).
+- [x] Créer la grille style Pinterest.
+- [x] Implémenter les catégories (Maison moderne, Duplex, Villa, etc.).
+- [x] Ajouter recherche textuelle + filtres.
+- [x] Créer la page détail d'un plan (aperçu, prix, vendeur, caractéristiques).
 
 ### 3. Authentification et rôles
-- [ ] Mettre en place l'authentification sécurisée.
-- [ ] Créer les rôles : `acheteur`, `vendeur`, `admin`.
-- [ ] Bloquer l'achat aux utilisateurs non connectés.
-- [ ] Mettre en place la gestion des permissions par rôle.
+- [x] Mettre en place l'authentification sécurisée.
+- [x] Créer les rôles : `acheteur`, `vendeur`, `admin`.
+- [x] Bloquer l'achat aux utilisateurs non connectés.
+- [x] Mettre en place la gestion des permissions par rôle.
 
 ### 4. Espace vendeur
-- [ ] Créer le tableau de bord vendeur.
-- [ ] Permettre dépôt de plan (métadonnées + fichiers).
-- [ ] Implémenter CRUD des plans (ajout, modification, suppression).
-- [ ] Ajouter suivi des ventes vendeur.
+- [x] Créer le tableau de bord vendeur.
+- [x] Permettre dépôt de plan (métadonnées + fichiers).
+- [x] Implémenter CRUD des plans (ajout, modification, suppression).
+- [x] Ajouter suivi des ventes vendeur.
 
 ### 5. Espace acheteur
-- [ ] Créer le parcours d'achat sécurisé.
-- [ ] Intégrer paiement en ligne (mode test d'abord).
-- [ ] Débloquer téléchargement après paiement validé.
-- [ ] Ajouter historique des commandes.
+- [x] Créer le parcours d'achat sécurisé.
+- [x] Intégrer paiement en ligne (mode test d'abord).
+- [x] Débloquer téléchargement après paiement validé.
+- [x] Ajouter historique des commandes.
 
 ### 6. Espace administrateur
-- [ ] Créer le dashboard admin.
-- [ ] Implémenter validation/rejet des plans déposés.
-- [ ] Ajouter gestion utilisateurs.
-- [ ] Ajouter gestion catégories.
-- [ ] Ajouter supervision des transactions.
+- [x] Créer le dashboard admin.
+- [x] Implémenter validation/rejet des plans déposés.
+- [x] Ajouter gestion utilisateurs.
+- [x] Ajouter gestion catégories.
+- [x] Ajouter supervision des transactions.
 
 ## Priorité P2 - Sécurité et conformité (obligatoire avant prod)
-- [ ] Chiffrer les données sensibles.
-- [ ] Protéger contre SQL injection / XSS / CSRF.
-- [ ] Protéger les fichiers téléchargeables (URLs signées, contrôle d'accès).
-- [ ] Journaliser actions sensibles (audit logs).
+- [x] Chiffrer les données sensibles.
+- [x] Protéger contre SQL injection / XSS / CSRF.
+- [x] Protéger les fichiers téléchargeables (URLs signées, contrôle d'accès).
+- [x] Journaliser actions sensibles (audit logs).
 - [ ] Mettre en place sauvegardes régulières (DB + fichiers).
 
 ## Priorité P3 - Qualité, reporting, optimisation

@@ -25,6 +25,7 @@ Route::middleware(['auth:api', 'active'])->group(function (): void {
     Route::put('/me', [AuthController::class, 'updateProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/my-orders', [OrderController::class, 'index']);
+    Route::get('/cart', [OrderController::class, 'cart']);
     Route::post('/orders', [OrderController::class, 'store']);
     Route::post('/orders/{order}/simulate-fedapay', [OrderController::class, 'simulateFedapay']);
     Route::post('/orders/{order}/simulate-payment-success', [OrderController::class, 'simulatePaymentSuccess']);
