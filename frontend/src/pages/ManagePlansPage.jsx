@@ -5,6 +5,7 @@ import InputField from '../components/ui/InputField'
 import StatusBadge from '../components/ui/StatusBadge'
 import { createPlan, deletePlan, updatePlan } from '../api/plans'
 import { formatPrice } from '../utils/format'
+import useSellerPlans from '../hooks/useSellerPlans'
 
 const STATUS_OPTIONS = [
   { value: 'draft', label: 'Brouillon' },
@@ -20,7 +21,7 @@ const STATUS_LABELS = {
   rejected: 'Rejete',
 }
 
-export default function ManagePlansPage({ plans, plansStatus, plansError, onRefreshPlans }) {
+export default function ManagePlansPage({ onRefreshPlans = () => {} }) {
   const [form, setForm] = useState({
     id: null,
     category_id: '',
@@ -28,8 +29,11 @@ export default function ManagePlansPage({ plans, plansStatus, plansError, onRefr
     slug: '',
     description: '',
     price_cents: '',
-    currency: 'USD',
+    currency: 'XAF',
     status: 'draft',
+    surface: '0',
+    rooms: '1',
+    levels: '1',
   })
   const [coverImage, setCoverImage] = useState(null)
   const [planFile, setPlanFile] = useState(null)
@@ -37,6 +41,8 @@ export default function ManagePlansPage({ plans, plansStatus, plansError, onRefr
   const [feedback, setFeedback] = useState('')
   const [deletingId, setDeletingId] = useState(null)
   const [previewPlan, setPreviewPlan] = useState(null)
+
+  const { plans, status: plansStatus, error: plansError, refresh: refreshSellerPlans } = useSellerPlans()
 
   const categories = useMemo(() => {
     const map = new Map()
@@ -61,6 +67,9 @@ export default function ManagePlansPage({ plans, plansStatus, plansError, onRefr
       price_cents: '',
       currency: 'USD',
       status: 'draft',
+      surface: '0',
+      rooms: '1',
+      levels: '1',
     })
     setCoverImage(null)
     setPlanFile(null)
@@ -79,8 +88,11 @@ export default function ManagePlansPage({ plans, plansStatus, plansError, onRefr
       slug: plan.slug ?? '',
       description: plan.description ?? '',
       price_cents: String(plan.price_cents ?? ''),
-      currency: plan.currency ?? 'USD',
+      currency: plan.currency ?? 'XAF',
       status: plan.status ?? 'draft',
+      surface: String(plan.surface ?? 0),
+      rooms: String(plan.rooms ?? 0),
+      levels: String(plan.levels ?? 0),
     })
     setCoverImage(null)
     setPlanFile(null)
@@ -111,6 +123,7 @@ export default function ManagePlansPage({ plans, plansStatus, plansError, onRefr
 
       setFeedback(form.id ? 'Plan mis a jour.' : 'Plan cree avec succes.')
       resetForm()
+      await refreshSellerPlans()
       await onRefreshPlans()
     } catch {
       setFeedback('Service indisponible.')
@@ -131,6 +144,7 @@ export default function ManagePlansPage({ plans, plansStatus, plansError, onRefr
       }
       setFeedback('Plan supprime.')
       if (form.id === planId) resetForm()
+      await refreshSellerPlans()
       await onRefreshPlans()
     } catch {
       setFeedback('Service indisponible.')
@@ -172,6 +186,39 @@ export default function ManagePlansPage({ plans, plansStatus, plansError, onRefr
             value={form.description}
             onChange={handleChange}
             rows={4}
+          />
+
+          <InputField
+            id="surface"
+            name="surface"
+            label="Surface (m²)"
+            type="number"
+            min="0"
+            value={form.surface}
+            onChange={handleChange}
+            required
+          />
+
+          <InputField
+            id="rooms"
+            name="rooms"
+            label="Pièces"
+            type="number"
+            min="0"
+            value={form.rooms}
+            onChange={handleChange}
+            required
+          />
+
+          <InputField
+            id="levels"
+            name="levels"
+            label="Niveaux"
+            type="number"
+            min="0"
+            value={form.levels}
+            onChange={handleChange}
+            required
           />
 
           <InputField
@@ -256,6 +303,9 @@ export default function ManagePlansPage({ plans, plansStatus, plansError, onRefr
               <p>
                 {previewPlan.category?.name ?? 'Sans categorie'} - {formatPrice(previewPlan.price_cents, previewPlan.currency)}
               </p>
+              <p>
+                Surface: {previewPlan.surface ?? 'Non renseigne'} m² • Pièces: {previewPlan.rooms ?? 'Non renseigne'} • Niveaux: {previewPlan.levels ?? 'Non renseigne'}
+              </p>
               <Button type="button" variant="secondary" icon="bi bi-x-lg" onClick={() => setPreviewPlan(null)}>
                 Fermer l'apercu
               </Button>
@@ -270,6 +320,9 @@ export default function ManagePlansPage({ plans, plansStatus, plansError, onRefr
                   <h3>{plan.title}</h3>
                   <p>{plan.category?.name ?? 'Sans categorie'}</p>
                   <p className="plan-price">{formatPrice(plan.price_cents, plan.currency)}</p>
+                  <p className="plan-specs">
+                    Surface: {plan.surface ?? 'NC'} m² • Pièces: {plan.rooms ?? 'NC'} • Niveaux: {plan.levels ?? 'NC'}
+                  </p>
                   <div className="card-actions">
                     <Button type="button" variant="secondary" icon="bi bi-eye" title="Apercu" onClick={() => startPreview(plan)}>
                       Apercu

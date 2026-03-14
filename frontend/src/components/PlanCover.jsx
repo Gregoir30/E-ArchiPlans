@@ -25,5 +25,4 @@ const PlanCover = memo(function PlanCover({ plan, className = '', toneClass = ''
   )
 })
 
-export { FALLBACK_PLAN_IMAGE }
 export default PlanCover

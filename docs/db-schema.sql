@@ -8,9 +8,12 @@ CREATE TABLE users (
   email_verified_at TIMESTAMP NULL,
   password VARCHAR(255) NOT NULL,
   role ENUM('buyer','seller','admin') NOT NULL DEFAULT 'buyer',
+  api_token VARCHAR(80) NULL UNIQUE,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP NULL,
   updated_at TIMESTAMP NULL
 );
+-- Une migration ajoute un administrateur par défaut (admin@earchiplans.test, mot de passe 'password123').
 
 CREATE TABLE categories (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -27,6 +30,9 @@ CREATE TABLE plans (
   title VARCHAR(180) NOT NULL,
   slug VARCHAR(200) NOT NULL UNIQUE,
   description TEXT NULL,
+  surface INT UNSIGNED NOT NULL DEFAULT 0,
+  rooms TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  levels TINYINT UNSIGNED NOT NULL DEFAULT 0,
   price_cents INT UNSIGNED NOT NULL,
   currency CHAR(3) NOT NULL DEFAULT 'USD',
   status ENUM('draft','pending','approved','rejected') NOT NULL DEFAULT 'pending',

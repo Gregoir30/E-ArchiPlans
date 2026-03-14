@@ -32,3 +32,19 @@ export async function fetchAdminDashboard() {
   if (response.status === 403) return { ok: false, data: null, message: 'Acces reserve a l\'administrateur.' }
   return { ok: false, data: null, message: data?.message ?? 'Impossible de charger le dashboard admin.' }
 }
+
+export async function fetchSellerPlans() {
+  const response = await fetch('/api/dashboard/seller/plans', {
+    headers: withAuthHeader({ Accept: 'application/json' }),
+  })
+
+  const data = await readJson(response)
+
+  if (response.ok) {
+    return { ok: true, plans: Array.isArray(data?.data) ? data.data : [] }
+  }
+
+  if (response.status === 401) return { ok: false, plans: [], message: 'Connexion requise.' }
+  if (response.status === 403) return { ok: false, plans: [], message: 'Acces reserve au vendeur.' }
+  return { ok: false, plans: [], message: data?.message ?? 'Impossible de charger les plans.' }
+}

@@ -162,7 +162,7 @@ function App() {
     if (authUser?.role === 'admin') {
       page = <AdminDashboardPage />
     } else if (authUser?.role === 'seller') {
-      page = <SellerDashboardPage />
+      page = <SellerDashboardPage onNavigate={handleNavigate} />
     } else {
       page = (
         <main className="page">
@@ -186,14 +186,7 @@ function App() {
   if (path === '/modeles/contact-messages') page = <ContactMessagesModelPage />
 
   if (path === '/gestion-plans') {
-    page = (
-      <ManagePlansPage
-        plans={plans}
-        plansStatus={plansStatus}
-        plansError={plansError}
-        onRefreshPlans={refreshPlans}
-      />
-    )
+    page = <ManagePlansPage onRefreshPlans={refreshPlans} />
   }
 
   const handleCartNavigate = (event) => {

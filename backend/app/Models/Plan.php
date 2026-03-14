@@ -23,6 +23,15 @@ class Plan extends Model
         'status',
         'cover_image_path',
         'file_path',
+        'surface',
+        'rooms',
+        'levels',
+    ];
+
+    protected $casts = [
+        'surface' => 'integer',
+        'rooms' => 'integer',
+        'levels' => 'integer',
     ];
 
     public function seller(): BelongsTo

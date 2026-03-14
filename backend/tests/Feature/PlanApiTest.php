@@ -28,7 +28,7 @@ class PlanApiTest extends TestCase
             'slug' => 'villa-moderne-4-chambres',
             'description' => 'Plan detaille avec parking et terrasse.',
             'price_cents' => 125000,
-            'currency' => 'USD',
+            'currency' => 'XAF',
             'status' => 'approved',
             'cover_image' => UploadedFile::fake()->image('cover.jpg'),
             'plan_file' => UploadedFile::fake()->create('plan.pdf', 300, 'application/pdf'),
@@ -118,7 +118,7 @@ class PlanApiTest extends TestCase
             'title' => 'Plan interdit',
             'slug' => 'plan-interdit',
             'price_cents' => 15000,
-            'currency' => 'USD',
+            'currency' => 'XAF',
             'status' => 'draft',
         ];
 

@@ -3,7 +3,8 @@ import EmptyState from '../components/ui/EmptyState'
 import StatusBadge from '../components/ui/StatusBadge'
 import { formatPrice } from '../utils/format'
 import useFavorites from '../hooks/useFavorites'
-import PlanCover, { FALLBACK_PLAN_IMAGE, getPlanCoverUrl } from '../components/PlanCover'
+import useLandingData from '../hooks/useLandingData'
+import PlanCover, { getPlanCoverUrl } from '../components/PlanCover'
 
 const PLAN_STATUS_LABELS = {
   draft: 'Brouillon',
@@ -19,12 +20,6 @@ const SORT_OPTIONS = [
   { value: 'popular', label: 'Plus populaire' },
 ]
 
-const TRUST_METRICS = [
-  { icon: 'bi bi-building', value: '200+', label: 'Plans livrés dans 30 pays' },
-  { icon: 'bi bi-clock-history', value: '48h', label: 'Livraison express certifiée' },
-  { icon: 'bi bi-person-badge', value: '45', label: 'Architectes certifiés en Europe' },
-]
-
 const GALLERY_BATCH_SIZE = 6
 const INITIAL_GALLERY_COUNT = 8
 const MAX_FEATURED = 2
@@ -35,12 +30,43 @@ function toneClass(index, mod = 4) {
 }
 
 function getPlanSpecs(plan) {
+  const hasSpecs =
+    plan &&
+    (Number.isFinite(Number(plan.surface)) ||
+      Number.isFinite(Number(plan.rooms)) ||
+      Number.isFinite(Number(plan.levels)))
+
+  if (hasSpecs) {
+    return {
+      surface: Number(plan.surface) || 0,
+      rooms: Number(plan.rooms) || 0,
+      levels: Number(plan.levels) || 0,
+    }
+  }
+
   const seed = Number(plan?.id ?? 1)
   return {
     surface: 60 + (seed % 6) * 15,
     rooms: 2 + (seed % 4),
     levels: 1 + (seed % 3),
   }
+}
+
+function formatStatValue(value) {
+  if (value == null || Number.isNaN(Number(value))) return '—'
+  return new Intl.NumberFormat('fr-FR').format(Number(value))
+}
+
+function buildLandingMetrics({ stats, plansCount, categoriesCount }) {
+  const planValue = stats?.total_plans ?? plansCount
+  const categoryValue = stats?.total_categories ?? categoriesCount
+  const sellerValue = stats?.total_sellers ?? 0
+
+  return [
+    { icon: 'bi bi-building', value: formatStatValue(planValue), label: 'Plans disponibles' },
+    { icon: 'bi bi-list', value: formatStatValue(categoryValue), label: 'Catégories actives' },
+    { icon: 'bi bi-person-badge', value: formatStatValue(sellerValue), label: 'Architectes partenaires' },
+  ]
 }
 
 const FeaturedCard = memo(function FeaturedCard({
@@ -289,8 +315,8 @@ class SectionErrorBoundary extends Component {
 const DEFAULT_HERO_IMAGE =
   'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1600&q=80'
 
-function HeroSection({ heroPlan, onNavigate }) {
-  const bgImage = heroPlan ? getPlanImageUrl(heroPlan) : DEFAULT_HERO_IMAGE
+function HeroSection({ heroPlan, metrics = [], onNavigate }) {
+  const bgImage = heroPlan ? getPlanCoverUrl(heroPlan) : DEFAULT_HERO_IMAGE
   return (
     <section
       className="showcase-hero"
@@ -311,8 +337,9 @@ function HeroSection({ heroPlan, onNavigate }) {
             Nous contacter
           </button>
         </div>
+        <p className="hero-subhead">Plans prêts à livrer | Experts certifiés</p>
         <div className="hero-stats">
-          {TRUST_METRICS.map((metric) => (
+          {metrics.map((metric) => (
             <div key={metric.label} className="hero-stat">
               <i className={metric.icon} aria-hidden="true" />
               <div>
@@ -327,10 +354,11 @@ function HeroSection({ heroPlan, onNavigate }) {
   )
 }
 
-function TrustStrip() {
+function TrustStrip({ metrics = [] }) {
+  if (metrics.length === 0) return null
   return (
     <section className="trust-strip" aria-label="Chiffres clés">
-      {TRUST_METRICS.map((metric) => (
+      {metrics.map((metric) => (
         <article key={metric.label}>
           <i className={metric.icon} aria-hidden="true" />
           <p className="trust-value">{metric.value}</p>
@@ -706,7 +734,7 @@ function GalleryLightbox({ plan, onClose, onNavigate }) {
         </button>
         <img
           className="lightbox-image"
-          src={getPlanImageUrl(plan)}
+          src={getPlanCoverUrl(plan)}
           alt={`Aperçu complet du plan ${plan.title}`}
           loading="lazy"
         />
@@ -750,6 +778,14 @@ export default function LandingPage({
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterStatus, setNewsletterStatus] = useState('')
   const [catalogPage, setCatalogPage] = useState(1)
+  const { landingData } = useLandingData()
+  const {
+    heroPlan: landingHeroPlan,
+    featuredPlans: landingFeaturedList,
+    galleryPlans: landingGalleryList,
+    stats: landingStats,
+    priceRange: landingPriceRange,
+  } = landingData
 
   const priceBounds = useMemo(() => {
     if (plans.length === 0) return { min: 0, max: 0 }
@@ -765,7 +801,16 @@ export default function LandingPage({
     return { min: Math.min(...values), max: Math.max(...values) }
   }, [plans])
 
-  const priceSliderMax = priceBounds.max > 0 ? priceBounds.max : priceBounds.min + 500
+  const normalizedLandingPriceMin =
+    landingPriceRange?.min > 0 ? landingPriceRange.min / 100 : priceBounds.min
+  const normalizedLandingPriceMax =
+    landingPriceRange?.max > 0 ? landingPriceRange.max / 100 : priceBounds.max
+  const effectivePriceBounds = {
+    min: normalizedLandingPriceMin,
+    max: Math.max(normalizedLandingPriceMax, normalizedLandingPriceMin),
+  }
+
+  const priceSliderMax = effectivePriceBounds.max > 0 ? effectivePriceBounds.max : effectivePriceBounds.min + 500
   const priceCapValue = priceCap === 0 ? priceSliderMax : Math.min(priceCap, priceSliderMax)
 
   const surfaceSliderMax =
@@ -774,8 +819,18 @@ export default function LandingPage({
       : surfaceBounds.min + 100
   const surfaceMinValue = surfaceMin === 0 ? surfaceBounds.min : Math.max(surfaceMin, surfaceBounds.min)
 
-  const sliderPriceBounds = { ...priceBounds, max: priceSliderMax }
+  const sliderPriceBounds = { ...effectivePriceBounds, max: priceSliderMax }
   const sliderSurfaceBounds = { ...surfaceBounds, max: surfaceSliderMax }
+
+  const landingMetrics = useMemo(
+    () =>
+      buildLandingMetrics({
+        stats: landingStats,
+        plansCount: plans.length,
+        categoriesCount: categories.length,
+      }),
+    [landingStats, plans.length, categories.length],
+  )
 
   const handleSearchTermChange = useCallback((value) => {
     setSearchTerm(value)
@@ -846,8 +901,11 @@ export default function LandingPage({
     return filteredPlans.slice(start, start + CATALOG_PAGE_SIZE)
   }, [filteredPlans, safeCatalogPage])
 
-  const heroPlan = filteredPlans[0] ?? plans[0]
   const featuredPlans = filteredPlans.slice(0, MAX_FEATURED)
+  const landingFeaturedPlans = (landingFeaturedList?.length ?? 0) > 0 ? landingFeaturedList : featuredPlans
+  const heroPlan = landingHeroPlan ?? filteredPlans[0] ?? plans[0]
+  const galleryPlansToShow = (landingGalleryList?.length ?? 0) > 0 ? landingGalleryList : filteredPlans
+
   const handleCatalogPageChange = useCallback(
     (page) => {
       setCatalogPage((_) => {
@@ -876,8 +934,8 @@ export default function LandingPage({
 
   return (
     <main className="page page-landing showcase-page" id="main-content">
-      <HeroSection heroPlan={heroPlan} onNavigate={onNavigate} />
-      <TrustStrip />
+      <HeroSection heroPlan={heroPlan} metrics={landingMetrics} onNavigate={onNavigate} />
+      <TrustStrip metrics={landingMetrics} />
       <FavoriteSummary
         count={favoriteIds.size}
         hasFavorites={hasFavorites}
@@ -903,7 +961,7 @@ export default function LandingPage({
         <FeaturedSection
           plansStatus={plansStatus}
           plansError={plansError}
-          featuredPlans={featuredPlans}
+          featuredPlans={landingFeaturedPlans}
           onBuyPlan={onBuyPlan}
           onViewPlan={(planId) => {
             const event = {
@@ -938,7 +996,7 @@ export default function LandingPage({
         <GallerySection
           key={galleryResetKey}
           plansStatus={plansStatus}
-          galleryPlans={filteredPlans}
+          galleryPlans={galleryPlansToShow}
           favoriteIds={favoriteIds}
           onToggleFavorite={toggleFavorite}
           onNavigate={onNavigate}

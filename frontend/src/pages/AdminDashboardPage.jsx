@@ -171,7 +171,7 @@ export default function AdminDashboardPage() {
 
             <article className="detail-item">
               <p className="detail-label">Chiffre d'affaires estime</p>
-              <p className="detail-value">{formatPrice(summary.revenue_cents ?? 0, summary.currency ?? 'USD')}</p>
+            <p className="detail-value">{formatPrice(summary.revenue_cents ?? 0, summary.currency ?? 'XAF')}</p>
             </article>
 
             <h2>Plans en attente</h2>
@@ -193,7 +193,7 @@ export default function AdminDashboardPage() {
                         <td>{plan.title}</td>
                         <td>{plan.seller?.name ?? '-'}</td>
                         <td>{plan.category?.name ?? '-'}</td>
-                        <td>{formatPrice(plan.price_cents ?? 0, plan.currency ?? 'USD')}</td>
+                        <td>{formatPrice(plan.price_cents ?? 0, plan.currency ?? 'XAF')}</td>
                         <td>
                           <div className="table-actions">
                             <button
@@ -334,7 +334,7 @@ export default function AdminDashboardPage() {
                         <td>#{order.id}</td>
                         <td>{order.buyer?.name ?? '-'}</td>
                         <td><StatusBadge value={order.payment_status} labelMap={ORDER_STATUS_LABELS} className="inline-badge" /></td>
-                        <td>{formatPrice(order.total_cents ?? 0, order.currency ?? 'USD')}</td>
+                      <td>{formatPrice(order.total_cents ?? 0, order.currency ?? 'XAF')}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -349,4 +349,3 @@ export default function AdminDashboardPage() {
     </main>
   )
 }
-

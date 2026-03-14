@@ -42,3 +42,15 @@ docker compose up -d mysql
 Le workflow `.github/workflows/ci.yml` execute:
 - Frontend: lint + build + tests
 - Backend: tests Laravel
+
+## Identifiant de connexion pour admin
+- Email: `admin@earchiplans.test`
+- Mot de passe: `password123`
+
+## Identifiant de connexion pour utilisateur
+- Email: `user@earchiplans.test`
+- Mot de passe: `password123`
+
+## Identifiant de connexion pour seller
+- Email: `seller@earchiplans.test`
+- Mot de passe: `password123`

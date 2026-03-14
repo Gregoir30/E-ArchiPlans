@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('buyer_id')->constrained('users')->restrictOnDelete();
             $table->unsignedInteger('total_cents');
-            $table->char('currency', 3)->default('USD');
+            $table->char('currency', 3)->default('XAF');
             $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
             $table->string('payment_provider', 80)->nullable();
             $table->string('payment_reference', 120)->nullable();
@@ -25,4 +25,3 @@ return new class extends Migration
         Schema::dropIfExists('orders');
     }
 };
-

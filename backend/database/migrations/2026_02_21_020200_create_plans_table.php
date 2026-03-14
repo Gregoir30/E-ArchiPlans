@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('slug', 200)->unique();
             $table->text('description')->nullable();
             $table->unsignedInteger('price_cents');
-            $table->char('currency', 3)->default('USD');
+            $table->char('currency', 3)->default('XAF');
             $table->enum('status', ['draft', 'pending', 'approved', 'rejected'])->default('pending');
             $table->string('cover_image_path')->nullable();
             $table->string('file_path')->nullable();
@@ -29,4 +29,3 @@ return new class extends Migration
         Schema::dropIfExists('plans');
     }
 };
-

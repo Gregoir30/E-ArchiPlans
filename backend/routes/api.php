@@ -53,6 +53,7 @@ Route::middleware(['auth:api', 'active', 'role:admin'])->group(function (): void
 
 Route::middleware(['auth:api', 'active', 'role:seller'])->group(function (): void {
     Route::get('/dashboard/seller', [DashboardController::class, 'seller']);
+    Route::get('/dashboard/seller/plans', [DashboardController::class, 'sellerPlans']);
 });
 
 Route::middleware(['auth:api', 'active', 'role:admin'])->group(function (): void {

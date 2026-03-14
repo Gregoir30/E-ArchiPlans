@@ -22,12 +22,14 @@ class PlanFactory extends Factory
             'title' => $title,
             'slug' => Str::slug($title).'-'.fake()->unique()->numberBetween(1000, 9999),
             'description' => fake()->paragraph(),
+            'surface' => fake()->numberBetween(60, 400),
+            'rooms' => fake()->numberBetween(2, 8),
+            'levels' => fake()->numberBetween(1, 4),
             'price_cents' => fake()->numberBetween(8000, 350000),
-            'currency' => 'USD',
+            'currency' => 'XAF',
             'status' => fake()->randomElement(['draft', 'pending', 'approved']),
             'cover_image_path' => 'covers/'.Str::slug($title).'.jpg',
             'file_path' => 'plans/'.Str::slug($title).'.pdf',
         ];
     }
 }
-

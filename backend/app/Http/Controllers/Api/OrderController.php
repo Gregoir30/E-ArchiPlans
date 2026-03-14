@@ -59,7 +59,7 @@ class OrderController extends Controller
             $order = Order::query()->create([
                 'buyer_id' => $request->user()->id,
                 'total_cents' => $total,
-                'currency' => 'USD',
+                'currency' => 'XAF',
                 'payment_status' => 'pending',
                 'payment_provider' => 'fedapay',
                 'payment_reference' => 'FDPAY-PENDING-'.strtoupper(Str::random(10)),

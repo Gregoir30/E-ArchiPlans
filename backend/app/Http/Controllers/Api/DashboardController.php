@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ContactMessage;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Http\Resources\PlanResource;
 use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -86,11 +87,24 @@ class DashboardController extends Controller
                 'orders_count' => $ordersCount,
                 'sold_items_count' => $soldItemsCount,
                 'revenue_cents' => $revenueCents,
-                'currency' => 'USD',
+                'currency' => 'XAF',
             ],
             'recent_plans' => $recentPlans,
             'recent_sales' => $recentSales,
         ]);
+    }
+
+    public function sellerPlans(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $plans = Plan::query()
+            ->with(['category:id,name,slug'])
+            ->where('seller_id', $user->id)
+            ->latest('created_at')
+            ->get();
+
+        return PlanResource::collection($plans)->response();
     }
 
     public function admin(): JsonResponse
@@ -138,7 +152,7 @@ class DashboardController extends Controller
                 'orders_paid' => $ordersPaid,
                 'orders_pending' => $ordersPending,
                 'revenue_cents' => $revenueCents,
-                'currency' => 'USD',
+                'currency' => 'XAF',
                 'contact_messages_total' => $contactMessagesTotal,
             ],
             'recent_orders' => $recentOrders,
