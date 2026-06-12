@@ -1,7 +1,7 @@
-import { readJson } from './http'
+import { readJson, getApiUrl } from './http'
 
 export async function fetchPublicCategories() {
-  const response = await fetch('/api/public/categories', {
+  const response = await fetch(getApiUrl('/api/public/categories'), {
     headers: { Accept: 'application/json' },
   })
 
@@ -15,4 +15,3 @@ export async function fetchPublicCategories() {
     categories: Array.isArray(data?.data) ? data.data : [],
   }
 }
-

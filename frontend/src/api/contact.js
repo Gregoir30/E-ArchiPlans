@@ -1,7 +1,7 @@
-import { getFirstValidationError, readJson } from './http'
+import { getFirstValidationError, readJson, getApiUrl } from './http'
 
 export async function sendContactMessage(formData) {
-  const response = await fetch('/api/contact', {
+  const response = await fetch(getApiUrl('/api/contact'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -22,4 +22,3 @@ export async function sendContactMessage(formData) {
 
   return { ok: false, status: response.status, message }
 }
-

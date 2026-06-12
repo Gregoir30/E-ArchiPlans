@@ -1,8 +1,8 @@
-import { readJson } from './http'
+import { readJson, getApiUrl } from './http'
 import { withAuthHeader } from '../utils/authToken'
 
 export async function fetchSellerDashboard() {
-  const response = await fetch('/api/dashboard/seller', {
+  const response = await fetch(getApiUrl('/api/dashboard/seller'), {
     headers: withAuthHeader({ Accept: 'application/json' }),
   })
 
@@ -18,7 +18,7 @@ export async function fetchSellerDashboard() {
 }
 
 export async function fetchAdminDashboard() {
-  const response = await fetch('/api/dashboard/admin', {
+  const response = await fetch(getApiUrl('/api/dashboard/admin'), {
     headers: withAuthHeader({ Accept: 'application/json' }),
   })
 
@@ -34,7 +34,7 @@ export async function fetchAdminDashboard() {
 }
 
 export async function fetchSellerPlans() {
-  const response = await fetch('/api/dashboard/seller/plans', {
+  const response = await fetch(getApiUrl('/api/dashboard/seller/plans'), {
     headers: withAuthHeader({ Accept: 'application/json' }),
   })
 

@@ -1,8 +1,8 @@
-﻿import { readJson } from './http'
+﻿import { readJson, getApiUrl } from './http'
 import { withAuthHeader } from '../utils/authToken'
 
 export async function createOrder(planIds) {
-  const response = await fetch('/api/orders', {
+  const response = await fetch(getApiUrl('/api/orders'), {
     method: 'POST',
     headers: withAuthHeader({
       'Content-Type': 'application/json',
@@ -24,7 +24,7 @@ export async function createOrder(planIds) {
 }
 
 export async function fetchMyOrders() {
-  const response = await fetch('/api/my-orders', {
+  const response = await fetch(getApiUrl('/api/my-orders'), {
     headers: withAuthHeader({ Accept: 'application/json' }),
   })
   const data = await readJson(response)
@@ -42,7 +42,7 @@ export async function fetchMyOrders() {
 }
 
 export async function fetchCartSummary() {
-  const response = await fetch('/api/cart', {
+  const response = await fetch(getApiUrl('/api/cart'), {
     headers: withAuthHeader({ Accept: 'application/json' }),
   })
   if (!response.ok) {
@@ -66,7 +66,7 @@ async function readErrorMessage(response, fallback) {
 }
 
 export async function simulateFedapayPayment(orderId, outcome) {
-  const response = await fetch(`/api/orders/${orderId}/simulate-fedapay`, {
+  const response = await fetch(getApiUrl(`/api/orders/${orderId}/simulate-fedapay`), {
     method: 'POST',
     headers: withAuthHeader({
       'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ export async function simulateFedapayPayment(orderId, outcome) {
 }
 
 export async function downloadPlanByToken(token, signedUrl = '') {
-  const targetUrl = signedUrl || `/api/downloads/${token}`
+  const targetUrl = signedUrl || getApiUrl(`/api/downloads/${token}`)
   const response = await fetch(targetUrl, {
     headers: withAuthHeader({ Accept: 'application/json, */*' }),
   })
@@ -110,7 +110,7 @@ export async function downloadPlanByToken(token, signedUrl = '') {
 }
 
 export async function cancelOrder(orderId) {
-  const response = await fetch(`/api/orders/${orderId}/cancel`, {
+  const response = await fetch(getApiUrl(`/api/orders/${orderId}/cancel`), {
     method: 'POST',
     headers: withAuthHeader({ Accept: 'application/json' }),
   })

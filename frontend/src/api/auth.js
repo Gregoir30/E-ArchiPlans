@@ -1,4 +1,4 @@
-import { getFirstValidationError, readJson } from './http'
+import { getFirstValidationError, readJson, getApiUrl } from './http'
 import {
   clearAuthToken,
   clearStoredUser,
@@ -8,7 +8,7 @@ import {
 } from '../utils/authToken'
 
 export async function registerUser(payload) {
-  const response = await fetch('/api/register', {
+  const response = await fetch(getApiUrl('/api/register'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -32,7 +32,7 @@ export async function registerUser(payload) {
 }
 
 export async function loginUser(payload) {
-  const response = await fetch('/api/login', {
+  const response = await fetch(getApiUrl('/api/login'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ export async function loginUser(payload) {
 }
 
 export async function logoutUser() {
-  const response = await fetch('/api/logout', {
+  const response = await fetch(getApiUrl('/api/logout'), {
     method: 'POST',
     headers: withAuthHeader({ Accept: 'application/json' }),
   })
@@ -72,7 +72,7 @@ export async function logoutUser() {
 }
 
 export async function fetchCurrentUser() {
-  const response = await fetch('/api/me', {
+  const response = await fetch(getApiUrl('/api/me'), {
     headers: withAuthHeader({ Accept: 'application/json' }),
   })
 
@@ -87,7 +87,7 @@ export async function fetchCurrentUser() {
 }
 
 export async function updateCurrentUser(payload) {
-  const response = await fetch('/api/me', {
+  const response = await fetch(getApiUrl('/api/me'), {
     method: 'PUT',
     headers: withAuthHeader({
       'Content-Type': 'application/json',

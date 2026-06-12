@@ -1,4 +1,4 @@
-import { readJson } from './http'
+import { readJson, getApiUrl } from './http'
 
 const initialLandingResponse = {
   heroPlan: null,
@@ -10,7 +10,7 @@ const initialLandingResponse = {
 }
 
 export async function fetchLandingData() {
-  const response = await fetch('/api/landing', {
+  const response = await fetch(getApiUrl('/api/landing'), {
     headers: {
       Accept: 'application/json',
     },

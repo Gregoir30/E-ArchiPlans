@@ -1,8 +1,8 @@
-import { getFirstValidationError, readJson } from './http'
+import { getFirstValidationError, readJson, getApiUrl } from './http'
 import { withAuthHeader } from '../utils/authToken'
 
 export async function fetchPlans() {
-  const response = await fetch('/api/plans', {
+  const response = await fetch(getApiUrl('/api/plans'), {
     headers: { Accept: 'application/json' },
   })
 
@@ -16,11 +16,11 @@ export async function fetchPlans() {
 }
 
 export async function createPlan(payload) {
-  return submitPlan('/api/plans', payload, false)
+  return submitPlan(getApiUrl('/api/plans'), payload, false)
 }
 
 export async function updatePlan(planId, payload) {
-  return submitPlan(`/api/plans/${planId}`, payload, true)
+  return submitPlan(getApiUrl(`/api/plans/${planId}`), payload, true)
 }
 
 async function submitPlan(url, payload, isUpdate) {
@@ -60,7 +60,7 @@ async function submitPlan(url, payload, isUpdate) {
 }
 
 export async function deletePlan(planId) {
-  const response = await fetch(`/api/plans/${planId}`, {
+  const response = await fetch(getApiUrl(`/api/plans/${planId}`), {
     method: 'DELETE',
     headers: withAuthHeader({ Accept: 'application/json' }),
   })

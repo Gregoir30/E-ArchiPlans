@@ -1,8 +1,8 @@
-import { getFirstValidationError, readJson } from './http'
+import { getFirstValidationError, readJson, getApiUrl } from './http'
 import { withAuthHeader } from '../utils/authToken'
 
 export async function fetchAdminUsers() {
-  const response = await fetch('/api/admin/users', {
+  const response = await fetch(getApiUrl('/api/admin/users'), {
     headers: withAuthHeader({ Accept: 'application/json' }),
   })
 
@@ -12,7 +12,7 @@ export async function fetchAdminUsers() {
 }
 
 export async function updateAdminUser(userId, payload) {
-  const response = await fetch(`/api/admin/users/${userId}`, {
+  const response = await fetch(getApiUrl(`/api/admin/users/${userId}`), {
     method: 'PATCH',
     headers: withAuthHeader({ Accept: 'application/json', 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
@@ -24,7 +24,7 @@ export async function updateAdminUser(userId, payload) {
 }
 
 export async function moderatePlan(planId, status) {
-  const response = await fetch(`/api/admin/plans/${planId}/moderate`, {
+  const response = await fetch(getApiUrl(`/api/admin/plans/${planId}/moderate`), {
     method: 'PATCH',
     headers: withAuthHeader({ Accept: 'application/json', 'Content-Type': 'application/json' }),
     body: JSON.stringify({ status }),
@@ -36,7 +36,7 @@ export async function moderatePlan(planId, status) {
 }
 
 export async function fetchAdminCategories() {
-  const response = await fetch('/api/admin/categories', {
+  const response = await fetch(getApiUrl('/api/admin/categories'), {
     headers: withAuthHeader({ Accept: 'application/json' }),
   })
 
@@ -46,7 +46,7 @@ export async function fetchAdminCategories() {
 }
 
 export async function createAdminCategory(payload) {
-  const response = await fetch('/api/admin/categories', {
+  const response = await fetch(getApiUrl('/api/admin/categories'), {
     method: 'POST',
     headers: withAuthHeader({ Accept: 'application/json', 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
@@ -58,7 +58,7 @@ export async function createAdminCategory(payload) {
 }
 
 export async function deleteAdminCategory(categoryId) {
-  const response = await fetch(`/api/admin/categories/${categoryId}`, {
+  const response = await fetch(getApiUrl(`/api/admin/categories/${categoryId}`), {
     method: 'DELETE',
     headers: withAuthHeader({ Accept: 'application/json' }),
   })
@@ -67,4 +67,3 @@ export async function deleteAdminCategory(categoryId) {
   const data = await readJson(response)
   return { ok: false, message: data?.message ?? 'Suppression impossible.' }
 }
-
